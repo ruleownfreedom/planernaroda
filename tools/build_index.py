@@ -22,6 +22,12 @@ HEAD = MARK + r'''
 <style>
   /* на экране «Домой» страница идёт под статус-бар: верхняя панель отступает на его высоту */
   #app .topbar{ padding-top:env(safe-area-inset-top, 0px); }
+  /* iOS на экране «Домой» с прозрачным статус-баром делает окно страницы ниже экрана на высоту статус-бара —
+     внизу, у скруглений, оставалась пустая полоса. Тело страницы растягивается на эту разницу (её меряет скрипт ниже),
+     и всё, что прижато к низу (панели, шторки, кнопка «+»), встаёт к настоящему низу экрана. */
+  html.web-gap body{ position:fixed; top:0; left:0; right:0; height:calc(100% + var(--web-gap, 0px)); transform:translateZ(0); }
+  html.web-gap #app{ height:100%; }
+  html.web-gap .lockveil{ height:100% !important; }
 </style>
 <script>
   /* статус-бар iPhone: над тёмной верхней панелью — прозрачный со светлым текстом (панель уходит под него),
@@ -38,6 +44,28 @@ HEAD = MARK + r'''
     }catch(e){ st = 'default'; }
     var m = document.createElement('meta'); m.name = 'apple-mobile-web-app-status-bar-style'; m.content = st;
     document.head.appendChild(m);
+    /* разница между высотой экрана и окна страницы (см. «web-gap» выше); пока открыта клавиатура — как было,
+       чтобы не сбить подъём форм над клавиатурой */
+    function fitGap(){
+      try{
+        var d = document.documentElement, vv = window.visualViewport;
+        if(vv && window.innerHeight - vv.height > 80) return;
+        var standalone = navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+        var land = window.innerWidth > window.innerHeight;
+        var full = land ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
+        var gap = full - window.innerHeight;
+        if(standalone && st === 'black-translucent' && gap > 0 && gap < 120){
+          d.style.setProperty('--web-gap', gap + 'px'); d.classList.add('web-gap');
+        } else { d.classList.remove('web-gap'); d.style.removeProperty('--web-gap'); }
+      }catch(e){}
+    }
+    fitGap();
+    addEventListener('resize', fitGap);
+    addEventListener('orientationchange', function(){ setTimeout(fitGap, 300); });
+    if(window.visualViewport) window.visualViewport.addEventListener('resize', function(){
+      var vv = window.visualViewport, d = document.documentElement;
+      if(window.innerHeight - vv.height > 80){ d.classList.remove('web-gap'); } else fitGap();
+    });
     function remember(){
       try{
         var tb = document.querySelector('.topbar'); if(!tb) return;
