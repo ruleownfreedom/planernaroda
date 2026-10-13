@@ -5,7 +5,7 @@
 
 Берёт тот же HTML, что идёт в Android (app/src/main/assets/index.html),
 и добавляет в <head> только то, что нужно веб-приложению на экране «Домой»:
-мета-теги iOS, иконку, манифест, отступ верхней панели под статус-бар
+мета-теги iOS (непрозрачный статус-бар в цвет верхней панели), иконку, манифест
 и офлайн-кэш (sw.js). Сам код приложения не меняется.
 """
 import pathlib, sys
@@ -16,71 +16,43 @@ HEAD = MARK + r'''
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Планировщик">
+<!-- статус-бар непрозрачный: с прозрачным («black-translucent») iOS 26 делает окно веб-приложения короче экрана
+     на высоту статус-бара, и внизу остаётся пустая полоса, в которую страница не может рисовать
+     (WebKit bug 301108). iOS читает этот тег только при добавлении на экран «Домой». -->
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#26282B">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
 <style>
-  /* на экране «Домой» страница идёт под статус-бар: верхняя панель отступает на его высоту */
+  /* если страница всё же идёт под статус-бар — верхняя панель отступает на его высоту (при непрозрачном это 0) */
   #app .topbar{ padding-top:env(safe-area-inset-top, 0px); }
-  /* iOS на экране «Домой» с прозрачным статус-баром делает окно страницы ниже экрана на высоту статус-бара —
-     внизу, у скруглений, оставалась пустая полоса. Тело страницы растягивается на эту разницу (её меряет скрипт ниже),
-     и всё, что прижато к низу (панели, шторки, кнопка «+»), встаёт к настоящему низу экрана. */
-  html.web-gap body{ position:fixed; top:0; left:0; right:0; height:calc(100% + var(--web-gap, 0px)); transform:translateZ(0); }
-  html.web-gap #app{ height:100%; }
-  html.web-gap .lockveil{ height:100% !important; }
 </style>
 <script>
-  /* статус-бар iPhone: над тёмной верхней панелью — прозрачный со светлым текстом (панель уходит под него),
-     над светлой — обычный с тёмным текстом. iOS читает это при запуске, поэтому цвет панели запоминается
-     при уходе из приложения и применяется при следующем открытии. */
+  /* цвет статус-бара (theme-color) — под цвет верхней панели текущей темы */
   (function(){
-    var st = null;
-    try{
-      st = localStorage.getItem('planer_web_statusbar');
-      if(st !== 'default' && st !== 'black-translucent'){
-        var s = JSON.parse(localStorage.getItem('planner_settings_v1') || 'null'), sc = s && s.ui && s.ui.scheme;
-        st = (sc === 'dark' || (sc !== 'light' && !(window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches))) ? 'black-translucent' : 'default';
-      }
-    }catch(e){ st = 'default'; }
-    var m = document.createElement('meta'); m.name = 'apple-mobile-web-app-status-bar-style'; m.content = st;
-    document.head.appendChild(m);
-    /* разница между высотой экрана и окна страницы (см. «web-gap» выше); пока открыта клавиатура — как было,
-       чтобы не сбить подъём форм над клавиатурой */
-    function fitGap(){
+    function color(){
       try{
-        var d = document.documentElement, vv = window.visualViewport;
-        if(vv && window.innerHeight - vv.height > 80) return;
-        var standalone = navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
-        var land = window.innerWidth > window.innerHeight;
-        var full = land ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
-        var gap = full - window.innerHeight;
-        if(standalone && st === 'black-translucent' && gap > 0 && gap < 120){
-          d.style.setProperty('--web-gap', gap + 'px'); d.classList.add('web-gap');
-        } else { d.classList.remove('web-gap'); d.style.removeProperty('--web-gap'); }
-      }catch(e){}
-    }
-    fitGap();
-    addEventListener('resize', fitGap);
-    addEventListener('orientationchange', function(){ setTimeout(fitGap, 300); });
-    if(window.visualViewport) window.visualViewport.addEventListener('resize', function(){
-      var vv = window.visualViewport, d = document.documentElement;
-      if(window.innerHeight - vv.height > 80){ d.classList.remove('web-gap'); } else fitGap();
-    });
-    function remember(){
-      try{
-        var tb = document.querySelector('.topbar'); if(!tb) return;
+        var tb = document.querySelector('.topbar'), m = document.querySelector('meta[name="theme-color"]');
+        if(!tb || !m) return;
         var cs = getComputedStyle(tb), bi = cs.backgroundImage, all = (bi && bi !== 'none' ? bi : '') + ' ' +
           cs.backgroundColor + ' ' + getComputedStyle(document.getElementById('app') || document.body).backgroundColor;
-        var c = null, re = /rgba?\(([^)]+)\)/g, mm;
-        while((mm = re.exec(all))){ var v = mm[1].split(/[ ,\/]+/).map(parseFloat); if(v.length < 4 || v[3] >= .5){ c = v; break; } }
-        if(!c) return;
-        var L = (.299 * c[0] + .587 * c[1] + .114 * c[2]) / 255;
-        localStorage.setItem('planer_web_statusbar', L < .55 ? 'black-translucent' : 'default');
+        var re = /rgba?\(([^)]+)\)/g, mm;
+        while((mm = re.exec(all))){
+          var v = mm[1].split(/[ ,\/]+/).map(parseFloat);
+          if(v.length < 4 || v[3] >= .5){
+            var c = 'rgb(' + Math.round(v[0]) + ',' + Math.round(v[1]) + ',' + Math.round(v[2]) + ')';
+            if(m.content !== c) m.content = c;
+            return;
+          }
+        }
       }catch(e){}
     }
-    addEventListener('load', function(){ setTimeout(remember, 1500); });
-    document.addEventListener('visibilitychange', function(){ if(document.hidden) remember(); });
-    addEventListener('pagehide', remember);
+    var t = 0; function soon(){ clearTimeout(t); t = setTimeout(color, 500); }
+    addEventListener('load', function(){ setTimeout(color, 300); });
+    document.addEventListener('click', soon, true);
+    document.addEventListener('visibilitychange', soon);
+    if(window.matchMedia) try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change', soon); }catch(e){}
   })();
   if('serviceWorker' in navigator && location.protocol === 'https:'){
     addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
