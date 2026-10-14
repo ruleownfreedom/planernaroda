@@ -869,6 +869,34 @@
   .addays input[type=number]{ width:58px; margin:0 8px; padding:6px 8px; text-align:center; font:600 16px var(--font-body); color:var(--text);
     background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-s); -moz-appearance:textfield; }
   .addays input::-webkit-outer-spin-button, .addays input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+  /* v51 §2: «Напоминания» (Android app only): the time of the reminders, the days before the term (several at once) */
+  .uirows.ntf-off{ opacity:.45; pointer-events:none; }
+  .uirow input.ntf-time{ flex:none; width:auto; font:600 16px var(--font-body); color:var(--text); background:var(--surface-2);
+    border:1px solid var(--border); border-radius:var(--radius-s); padding:6px 8px; color-scheme:inherit; }
+  .uirow.ntf-dayrow{ flex-wrap:wrap; gap:8px 10px; padding:10px 12px 12px; }
+  .uirow.ntf-dayrow .lbl{ flex:1 1 100%; }
+  .ntf-days{ display:flex; flex-wrap:wrap; gap:6px; width:100%; }
+  .ntf-day{ flex:1 1 auto; min-height:36px; padding:6px 10px; border-radius:100px; border:1px solid var(--border); background:var(--surface-2);
+    color:var(--text-dim); font:600 13px var(--font-body); cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .ntf-day.on{ border-color:var(--type-current); color:var(--text); background:color-mix(in srgb, var(--type-current) 24%, var(--surface-2)); }
+  .ntf-warn{ color:var(--danger) !important; }
+  /* v54.1 §3: время срока исполнения в форме задачи */
+  .duetime{ display:flex; align-items:center; gap:10px; margin-top:10px; flex-wrap:wrap; }
+  .duetime label{ margin:0; font-weight:600; }
+  .duetime input[type=time]{ font:inherit; color:var(--text); background:var(--surface-2, transparent); border:1px solid var(--border, rgba(127,127,127,.35)); border-radius:10px; padding:8px 10px; }
+  .duetime input:disabled{ opacity:.45; }
+  /* v53 §4.3–§4.4: пароль резервных копий, автокопия, плашка смены пароля */
+  #sheetOverlay.ov-top ~ #subSheetOverlay{ z-index:46; }
+  .sheet .btn:disabled{ opacity:.45; cursor:default; }    /* окно поверх окна, открытого из «Параметров» */
+  .bk-warn{ font-size:13px; line-height:1.45; color:var(--text); background:color-mix(in srgb, var(--danger) 10%, transparent); border:1px solid color-mix(in srgb, var(--danger) 35%, transparent); border-radius:12px; padding:10px 12px; margin:2px 0 10px; }
+  .bk-ok{ display:flex; align-items:center; gap:10px; font:600 14px var(--font-body); color:var(--text); margin:0 2px 12px; cursor:pointer; }
+  .bk-ok input{ width:20px; height:20px; accent-color:var(--type-current, var(--text)); }
+  .bk-sub{ font:700 12px var(--font-body); letter-spacing:.06em; text-transform:uppercase; color:var(--text-dim); margin:16px 2px 8px; }
+  .bk-banner{ position:absolute; left:10px; right:10px; top:calc(100% + 6px); z-index:25; display:flex; align-items:center; gap:6px; padding:6px 6px 6px 12px; border-radius:14px;
+    background:color-mix(in srgb, var(--danger) 16%, var(--bg)); border:1px solid color-mix(in srgb, var(--danger) 45%, transparent); box-shadow:0 6px 18px rgba(0,0,0,.18); }
+  .bk-banner.ready{ background:color-mix(in srgb, var(--type-current, #4a8) 18%, var(--bg)); border-color:color-mix(in srgb, var(--type-current, #4a8) 50%, transparent); }
+  .bk-banner .bkb-t{ flex:1; min-width:0; text-align:left; background:none; border:0; padding:4px 0; color:var(--text); font:600 13px/1.3 var(--font-body); cursor:pointer; }
+  .bk-banner .bkb-x{ flex:none; background:var(--surface, rgba(0,0,0,.08)); border:1px solid var(--border-soft, rgba(0,0,0,.12)); border-radius:10px; padding:7px 10px; color:var(--text); font:700 12.5px var(--font-body); cursor:pointer; }
 
   /* ================= Нижний ящик: окно проекта (список записей) =================
      The window carries the .sheet-overlay / .sheet classes, so every theme's sheet colours, fonts and buttons apply to it. */
@@ -3470,6 +3498,7 @@
     if(v && typeof v === 'object'){
       if(AUTODEL_MODES.indexOf(v.mode) >= 0) o.mode = v.mode;
       if(isFinite(v.days)) o.days = Math.max(1, Math.min(365, Math.round(v.days)));
+      if(isFinite(v.since) && v.since > 0) o.since = +v.since;   // v54.2 §7: when the rule was chosen
     }
     return o;
   }
@@ -3503,7 +3532,35 @@
     v = v || {}; var on = !!v.enabled && !!v.hash && !!v.salt;
     return { enabled: on, salt: String(v.salt || ''), hash: String(v.hash || ''), resetStartedAt: +v.resetStartedAt || 0, resetAt: +v.resetAt || 0 };
   }
-  var settings = { plannerName:'Планировщик Народа', managers:[], executors:[], ui:normUI(null), autoDel:normAutoDel(null), groupOrder:'groups-first', shareFmt:'txt', picSrc:'gallery', saveDest:'downloads', deletedKeep:normDelKeep(null), deletedLock:normDelLock(null) };
+  /* v51 §2: «Напоминания» (Android app only): all off until the main switch is on; the summary at 9:00, the term — a day before.
+     before: the days before the term (0 — on the day itself). Kept in the settings, not written to a backup (it is this phone's). */
+  var NTF_BEFORE = [[0, 'В день срока'], [1, 'За 1 день'], [3, 'За 3 дня'], [7, 'За 7 дней']];
+  var NTF_HOURS = [[3, 'За 3 часа'], [1, 'За 1 час']];   // v54.1 §3: только для текущих задач с точным временем срока
+  function normNotif(v){
+    var o = { on:false, time:'09:00', summary:true, before:[1], hours:[], periodic:true, sphereStart:false, sphereBar:false };
+    if(v && typeof v === 'object'){
+      if(typeof v.on === 'boolean') o.on = v.on;
+      var tm = hhmm(v.time); if(tm) o.time = tm;
+      if(typeof v.summary === 'boolean') o.summary = v.summary;
+      if(Array.isArray(v.before)) o.before = v.before.map(Number).filter(function(n, i, a){ return [0, 1, 3, 7].indexOf(n) >= 0 && a.indexOf(n) === i; }).sort(function(a, b){ return a - b; });
+      if(typeof v.periodic === 'boolean') o.periodic = v.periodic;
+      if(typeof v.sphereStart === 'boolean') o.sphereStart = v.sphereStart;
+      if(typeof v.sphereBar === 'boolean') o.sphereBar = v.sphereBar;
+      if(Array.isArray(v.hours)) o.hours = v.hours.map(Number).filter(function(n, i, a){ return (n === 1 || n === 3) && a.indexOf(n) === i; }).sort(function(a, b){ return b - a; });
+    }
+    return o;
+  }
+  /* v53 §4.3–§4.4: автокопия (только в приложении Android); пароль — в обёртке, здесь только выбор и ожидание смены пароля */
+  function normAutoBackup(v){
+    var o = { mode:'off', keep:5, reset:null };
+    if(v && typeof v === 'object'){
+      if(v.mode === 'week' || v.mode === 'month') o.mode = v.mode;
+      if([3, 5, 10].indexOf(+v.keep) >= 0) o.keep = +v.keep;
+      if(v.reset && isFinite(v.reset.startedAt) && isFinite(v.reset.endsAt)) o.reset = { startedAt: +v.reset.startedAt, endsAt: +v.reset.endsAt };
+    }
+    return o;
+  }
+  var settings = { plannerName:'Планировщик Народа', managers:[], executors:[], ui:normUI(null), autoDel:normAutoDel(null), groupOrder:'groups-first', shareFmt:'txt', picSrc:'gallery', saveDest:'downloads', deletedKeep:normDelKeep(null), deletedLock:normDelLock(null), notif:normNotif(null), autoBackup:normAutoBackup(null) };
   var lastSettingsJSON = '';
   var settingsReady = false;                       // v46: the settings are read (the deleted records are cleared by the term only after that)
 
@@ -3531,6 +3588,7 @@
      task is marked important — a status change or an edit (which update updatedAt) never move it. Tasks saved before
      sortAt existed take their last updatedAt once, so the order they had is kept. */
   function normTasks(){ tasks.forEach(function(t){
+    if(t && t.id) statSeen[t.id] = t.status;              // v51 §1: the status each task has here (a change to «finished» goes to statLog)
     if(t && !isFinite(t.sortAt)) t.sortAt = +t.updatedAt || +t.createdAt || 0;
     // finished before doneAt existed: the last change is taken as the moment it was finished
     if(t && COMPLETED.indexOf(t.status) >= 0 && !isFinite(t.doneAt)) t.doneAt = +t.updatedAt || +t.createdAt || 0;
@@ -3538,6 +3596,7 @@
   /* the deletion moment of a finished task under the current setting (null — never) */
   function autoDelAt(t, rule){
     var a = rule || settings.autoDel || {}, d0 = +t.doneAt; if(!isFinite(d0) || !d0) return null;
+    if(isFinite(a.since) && a.since > d0) d0 = a.since;   // v54.2 §7: finished before the rule was chosen — counted from the choice
     if(a.mode === 'week') return d0 + 7 * 86400000;
     if(a.mode === 'days') return d0 + (a.days || 14) * 86400000;
     if(a.mode === 'month'){ var d = new Date(d0); d.setMonth(d.getMonth() + 1); return d.getTime(); }
@@ -3566,7 +3625,7 @@
      for as long as such an old version is still in work. */
   function lineage(t){ return (t && (t.origin || t.id)) || ''; }
   var CONTENT_KEYS = ['type','title','manager','executor','finance','tools','resources','ksa','stages','stagesV2','resultDescription','reportRequisites',
-    'note','status','delayReason','delayDetail','report','priority','scheduledDates','datesDone','dueDate','controlMarks'];
+    'note','status','delayReason','delayDetail','report','priority','scheduledDates','datesDone','dueDate','dueTime','controlMarks'];
   function stable(v){                       // JSON with the object keys sorted, so equal contents give equal text
     if(Array.isArray(v)) return '[' + v.map(stable).join(',') + ']';
     if(v && typeof v === 'object') return '{' + Object.keys(v).sort().map(function(k){ return JSON.stringify(k) + ':' + stable(v[k]); }).join(',') + '}';
@@ -3601,7 +3660,7 @@
   function loadSettingsLocal(){
     try{
       var raw = localStorage.getItem('planner_settings_v1');
-      if(raw){ var parsed = JSON.parse(raw); settings.plannerName = parsed.plannerName || settings.plannerName; settings.managers = parsed.managers || []; settings.executors = parsed.executors || []; settings.ui = normUI(parsed.ui); settings.autoDel = normAutoDel(parsed.autoDel); settings.groupOrder = normGroupOrder(parsed.groupOrder); settings.shareFmt = normShareFmt(parsed.shareFmt); settings.picSrc = normPicSrc(parsed.picSrc); settings.saveDest = normSaveDest(parsed.saveDest); settings.deletedKeep = normDelKeep(parsed.deletedKeep); settings.deletedLock = normDelLock(parsed.deletedLock); }
+      if(raw){ var parsed = JSON.parse(raw); settings.plannerName = parsed.plannerName || settings.plannerName; settings.managers = parsed.managers || []; settings.executors = parsed.executors || []; settings.ui = normUI(parsed.ui); settings.autoDel = normAutoDel(parsed.autoDel); settings.groupOrder = normGroupOrder(parsed.groupOrder); settings.shareFmt = normShareFmt(parsed.shareFmt); settings.picSrc = normPicSrc(parsed.picSrc); settings.saveDest = normSaveDest(parsed.saveDest); settings.deletedKeep = normDelKeep(parsed.deletedKeep); settings.deletedLock = normDelLock(parsed.deletedLock); settings.notif = normNotif(parsed.notif); settings.autoBackup = normAutoBackup(parsed.autoBackup); }
     }catch(e){}
   }
   function saveSettingsLocal(){
@@ -4049,6 +4108,7 @@
               var go = normGroupOrder(data.groupOrder); if(go !== settings.groupOrder){ settings.groupOrder = go; render(); }
               settings.shareFmt = normShareFmt(data.shareFmt); settings.picSrc = normPicSrc(data.picSrc); settings.saveDest = normSaveDest(data.saveDest);
               settings.deletedKeep = normDelKeep(data.deletedKeep); settings.deletedLock = normDelLock(data.deletedLock);
+              settings.notif = normNotif(data.notif); settings.autoBackup = normAutoBackup(data.autoBackup);
               if(typeof delSettingsChanged === 'function') delSettingsChanged();
               if(data.ui) settings.ui = normUI(data.ui);
             }
@@ -4066,6 +4126,11 @@
 
   function persistTask(task){
     task.updatedAt = Date.now();
+    // v51 §1: a task that becomes finished here is written to the journal of the statistics
+    var isNew = !(task.id in statSeen) && !tasks.some(function(x){ return x.id === task.id; });   // v54.2 §8: a task created here
+    var prevSt = statSeen[task.id]; statSeen[task.id] = task.status;
+    if(isNew) statLogAdd(task, 'new', +task.createdAt || Date.now());
+    if(COMPLETED.indexOf(task.status) >= 0 && COMPLETED.indexOf(prevSt) < 0) statLogAdd(task, statKind(task));
     if(COMPLETED.indexOf(task.status) >= 0){ if(!isFinite(task.doneAt)) task.doneAt = task.updatedAt; }   // finished: the count of days starts
     else { if('doneAt' in task) delete task.doneAt; if(task.mgHide) delete task.mgHide; }   // back in work: in «Управление» again
     if(usingDb && dbCol){
@@ -4079,6 +4144,7 @@
   }
 
   function deleteTask(id){
+    var dt = tasks.find(function(x){ return x.id === id; }); if(dt) statLogAdd(dt, 'del');   // v54.2 §8: «удалено» (any deletion)
     if(usingDb && dbCol){ dbCol.doc(id).delete().catch(function(e){ console.error(e); }); }
     else { tasks = tasks.filter(function(x){ return x.id!==id; }); saveLocal(); render(); }
   }
@@ -4091,6 +4157,72 @@
     } else {
       saveSettingsLocal();
     }
+    snapSoon();                                     // v51: the reminders follow the settings
+  }
+
+  /* ================= v51 §1: the journal of the statistics (statLog) =================
+     A line for every task finished here: { t: when, kind: done | doneRep (done with a report) | moved | arch | cancel,
+     sph: its sphere, taskId }. doneAt cannot serve for this (it is dropped when a task goes back to work). Lines older than
+     400 days are dropped. The tasks finished before v51 are put in once by their doneAt. Kept on the device (localStorage)
+     and in a backup; the Android app counts its statistics widgets from it (the snapshot «stats»). */
+  var STATLOG_KEY = 'planner_statlog_v1', STATLOG_INIT = 'planner_statlog_init_v1', STATLOG_INIT2 = 'planner_statlog_init_v2', STATLOG_DAYS = 800;   // v54.2: two years — «Процент выполнения» compares a year with the year before
+  var statSeen = {};
+  var statLog = (function(){
+    try{ var a = JSON.parse(localStorage.getItem(STATLOG_KEY) || '[]'); return Array.isArray(a) ? a.filter(statOk) : []; }catch(e){ return []; }
+  })();
+  var STAT_KINDS = ['done', 'doneRep', 'moved', 'arch', 'cancel', 'new', 'del'];   // v54.2 §8: + created, deleted
+  function statOk(e){ return !!e && isFinite(+e.t) && +e.t > 0 && STAT_KINDS.indexOf(e.kind) >= 0; }
+  function statKind(t){ return t.status === 'done' ? (inReports(t) ? 'doneRep' : 'done') : t.status === 'archived' ? 'arch' : t.status === 'cancelled' ? 'cancel' : t.status === 'moved' ? 'moved' : null; }
+  function statLogSave(){
+    var lim = Date.now() - STATLOG_DAYS * 86400000;
+    statLog = statLog.filter(function(e){ return e.t >= lim; });
+    try{ localStorage.setItem(STATLOG_KEY, JSON.stringify(statLog)); }catch(e){}
+  }
+  function statLogAdd(t, kind, at, to){
+    if(!t || !kind) return;
+    var e = { t: at || Date.now(), kind: kind, sph: taskSphId(t) || '', taskId: String(t.id || ''), typ: t.type || '' };
+    if(to) e.to = to;                                   // v54.2: «moved» — the category it went to (counted as added there)
+    statLog.push(e);
+    statLogSave(); snapSoon();
+  }
+  /* v54.2 §8: «создано» for every task that has none yet (once after the update, and after an import) */
+  function statSeedNew(){
+    var have = {}; statLog.forEach(function(e){ if(e.kind === 'new') have[e.taskId] = 1; });
+    var lim = Date.now() - STATLOG_DAYS * 86400000, n = 0;
+    tasks.forEach(function(t){
+      if(!t || !t.id || have[t.id]) return;
+      var c = +t.createdAt; if(!isFinite(c) || c < lim) return;
+      statLog.push({ t: c, kind: 'new', sph: taskSphId(t) || '', taskId: String(t.id), typ: t.type || '' }); n++;
+    });
+    if(n){ statLog.sort(function(a, b){ return a.t - b.t; }); statLogSave(); snapSoon(); }
+  }
+  var statInitDone = false;
+  function statLogInit(){
+    if(statInitDone || !dataSeen.tasks) return;
+    statInitDone = true;
+    try{ if(localStorage.getItem(STATLOG_INIT2) !== '1'){ statSeedNew(); localStorage.setItem(STATLOG_INIT2, '1'); } }catch(e){}
+    try{ if(localStorage.getItem(STATLOG_INIT) === '1') return; }catch(e){ return; }
+    var have = {}; statLog.forEach(function(e){ if(e.kind !== 'new' && e.kind !== 'del') have[e.taskId] = 1; });
+    tasks.forEach(function(t){
+      var k = statKind(t);
+      if(k && COMPLETED.indexOf(t.status) >= 0 && +t.doneAt > 0 && !have[t.id]) statLog.push({ t: +t.doneAt, kind: k, sph: taskSphId(t) || '', taskId: String(t.id) });
+    });
+    statLog.sort(function(a, b){ return a.t - b.t; });
+    statLogSave();
+    try{ localStorage.setItem(STATLOG_INIT, '1'); }catch(e){}
+  }
+  // a backup's journal is added to this one (a line that is already here is not doubled)
+  function statLogMerge(arr){
+    if(!Array.isArray(arr)) return;
+    var key = function(e){ return e.t + '|' + e.kind + '|' + e.taskId; }, have = {};
+    statLog.forEach(function(e){ have[key(e)] = 1; });
+    arr.filter(statOk).forEach(function(e){
+      var o = { t: +e.t, kind: e.kind, sph: String(e.sph || ''), taskId: String(e.taskId || ''), typ: String(e.typ || '') };
+      if(e.to) o.to = String(e.to);
+      if(!have[key(o)]){ have[key(o)] = 1; statLog.push(o); }
+    });
+    statLog.sort(function(a, b){ return a.t - b.t; });
+    statLogSave(); snapSoon();
   }
 
   /* ================= helpers ================= */
@@ -4613,6 +4745,11 @@
     else if(currentTab==='manage') renderManage();
     else if(currentTab==='archive') renderArchive();
     else if(currentTab==='reports') renderReports();
+    statLogInit();                                         // v51 §1
+    tasks.forEach(function(t){ if(t && t.id && !(t.id in statSeen)) statSeen[t.id] = t.status; });
+    snapSoon();
+    bkBannerSync();                                        // v53 §4.4
+    if(typeof keepSoon === 'function') keepSoon();         // v54 §5.2
   }
 
   /* ================= tabs → top drawer of the cabinet =================
@@ -4657,8 +4794,9 @@
     else return '';
     var today = new Date(); today.setHours(0,0,0,0);
     var n = Math.round((end - today) / 86400000);
-    if(n < 0) return 'срок вышел';
-    if(n === 0) return 'сегодня';
+    var da = dueAt(t);
+    if(n < 0 || (da && da < Date.now())) return 'срок вышел';
+    if(n === 0) return da ? 'сегодня до ' + t.dueTime : 'сегодня';
     var a = n % 100, b = n % 10;
     if(b === 1 && a !== 11) return 'остался ' + n + ' день';
     if(b >= 2 && b <= 4 && (a < 10 || a >= 20)) return 'осталось ' + n + ' дня';
@@ -4753,6 +4891,12 @@
   }
   /* the statistics of a collapsed group (§2.5), counted over its tasks shown now (the chosen category) */
   function plural3(n, f){ var a = n % 100, b = n % 10; return f[(a > 10 && a < 20) ? 2 : b === 1 ? 0 : (b >= 2 && b <= 4) ? 1 : 2]; }
+  /* v54.1 §3: the exact moment of a current task's term (date + «Время»), or 0 when the term has no time */
+  function dueAt(t){
+    if(!t || t.type !== 'current' || !t.dueTime || !/^\d{4}-\d{2}-\d{2}$/.test(t.dueDate || '')) return 0;
+    var m = /^(\d{1,2}):(\d{2})$/.exec(t.dueTime); if(!m) return 0;
+    var d = new Date(t.dueDate + 'T00:00:00'); d.setHours(+m[1], +m[2], 0, 0); return d.getTime();
+  }
   function dueEnd(t){                                 // the last day of the term, or null
     var d = t.dueDate; if(!d || (t.type !== 'current' && t.type !== 'perspective')) return null;
     if(/^\d{4}-\d{2}-\d{2}$/.test(d)) return new Date(d + 'T00:00:00');
@@ -4767,7 +4911,7 @@
     var wk = 0, mo = 0, yr = 0, ny = 0, later = 0, late = 0;
     ts.forEach(function(t){                           // each term is counted once, in the nearest bucket
       var e = dueEnd(t); if(!e) return;
-      if(e < today) late++; else if(e <= sun) wk++; else if(e <= mEnd) mo++;
+      if(e < today || (dueAt(t) && dueAt(t) < Date.now())) late++; else if(e <= sun) wk++; else if(e <= mEnd) mo++;
       else if(e.getFullYear() === y0) yr++; else if(e.getFullYear() === y0 + 1) ny++; else later++;
     });
     var l1 = n + ' ' + plural3(n, ['задача','задачи','задач']) + (imp ? ' · ' + imp + ' ' + plural3(imp, ['важная','важных','важных']) : '');
@@ -5003,15 +5147,17 @@
       }).join('') +
       '<div role="radio" aria-checked="' + (AD.mode==='days') + '" class="uirow uopt addays' + (AD.mode==='days'?' on':'') + '" data-ad="days" tabindex="0"><span class="lbl">Через' +
         '<input type="number" inputmode="numeric" min="1" max="365" id="adDays" value="' + AD.days + '" aria-label="Число дней">' + daysWord(AD.days) + '</span>' + UI_CHECK + '</div>' +
-      '</div><p class="unote">Отсчёт идёт от завершения задачи (выполнена, отменена, отправлена в архив); у завершённых задач из резервной копии — от импорта.</p></div>';
+      '</div><p class="unote">Отсчёт идёт от завершения задачи (выполнена, отменена, отправлена в архив); для задач, завершённых до выбора правила, — от дня выбора; у завершённых задач из резервной копии — от импорта.</p></div>';
 
     html += '<div class="settings-group" id="delBlock">' + delBlockHtml() + '</div>';
+    if(NTF_UI) html += '<div class="settings-group" id="ntfBlock">' + ntfBlockHtml() + '</div>';   // v51 §2
+    if(PRIV_UI) html += '<div class="settings-group" id="privBlock">' + privBlockHtml() + '</div>';   // v53 §4.1
 
     html += '<div class="settings-group"><div class="sg-title">Резервное копирование</div>' +
       '<div class="sheet-actions" style="gap:10px;">' +
       '<button class="btn btn-secondary btn-ico" id="btnExport" style="flex:1;"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3.5M7.5 8L12 3.5 16.5 8"/><path d="M4.5 13.5v5a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5"/></svg>Экспорт</button>' +
       '<button class="btn btn-secondary btn-ico" id="btnImport" style="flex:1;"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5V15M7.5 10.5L12 15l4.5-4.5"/><path d="M4.5 13.5v5a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5"/></svg>Импорт</button>' +
-      '</div><p class="unote" id="bkNote"></p><input type="file" id="importFile" accept=".zip,.json,application/zip,application/x-zip-compressed,application/json" hidden></div>';
+      '</div><p class="unote" id="bkNote"></p>' + (BK ? '<div id="abBlock">' + abBlockHtml() + '</div>' : '') + '<input type="file" id="importFile" accept=".zip,.json,application/zip,application/x-zip-compressed,application/json" hidden></div>';
 
     html += '<div class="sheet-actions savebar"><button class="btn btn-primary" id="btnSaveSettings">Сохранить</button></div>';
     html += '</div>';
@@ -5057,7 +5203,7 @@
     if(bkNote){
       var ml = projects && projects.mediaList ? projects.mediaList() : [], mb = 0; ml.forEach(function(m){ mb += m.size; });
       var est = 0; try{ est = backupJson().length; }catch(_){}
-      bkNote.textContent = 'Копия — один архив ZIP' + (ml.length ? ' с вложениями записей (файлов: ' + ml.length + ')' : '') + '. Размер: около ' + fmtMB(est + mb + 4096) + '. Импорт принимает архив и прежний файл .json.';
+      bkNote.textContent = 'Копия — один архив ZIP' + (BK ? ', зашифрованный паролем резервных копий' : '') + (ml.length ? (BK ? ',' : '') + ' с вложениями записей (файлов: ' + ml.length + ')' : '') + '. Размер: около ' + fmtMB(est + mb + 4096) + '.';
     }
     var importBtn = document.getElementById('btnImport');
     var importFile = document.getElementById('importFile');
@@ -5069,6 +5215,9 @@
     wireUISettings(document.getElementById('stUi'));
     wireAutoDel(container);
     wireDelBlock(container.querySelector('#delBlock'));   // v46
+    wireNtfBlock(container.querySelector('#ntfBlock'));   // v51 §2
+    wirePrivBlock(container.querySelector('#privBlock'));   // v53 §4.1
+    wireAbBlock(container.querySelector('#abBlock'));       // v53 §4.3
     // «Порядок групп» is applied at once (the drawer under the shutter is rebuilt)
     container.querySelectorAll('.uopt[data-go]').forEach(function(b){
       b.addEventListener('click', function(){
@@ -5117,10 +5266,13 @@
       if(same(rule) || asking) return;
       asking = true;
       var now = Date.now();
-      var due = tasks.filter(function(t){ if(COMPLETED.indexOf(t.status) < 0 || t.mgHide) return false; var at = autoDelAt(t, rule); return at !== null && now >= at; }).length;
+      /* v54.2 §7: the new rule counts from now for the tasks finished before it — none of them goes at once */
+      var probe = { mode: rule.mode, days: rule.days, since: now };
+      var older = tasks.filter(function(t){ return COMPLETED.indexOf(t.status) >= 0 && !t.mgHide && isFinite(+t.doneAt) && +t.doneAt > 0; }).length;
+      var whenGo = rule.mode === 'manual' ? null : autoDelAt({ doneAt: now }, probe);
       var what = rule.mode === 'manual' ? 'Завершённые задачи будут удаляться только вручную — кнопкой «Удалить из списка» в карточке.'
         : 'Завершённые задачи будут удаляться сами через ' + (rule.mode === 'week' ? 'неделю' : rule.mode === 'month' ? 'месяц' : rule.days + word(rule.days)) + ' после завершения.';
-      var now2 = due ? '<div class="sheet-sub">Уже старше этого срока: ' + due + ' ' + (due % 10 === 1 && due % 100 !== 11 ? 'задача' : (due % 10 >= 2 && due % 10 <= 4 && (due % 100 < 10 || due % 100 >= 20)) ? 'задачи' : 'задач') + ' — они уйдут из «Управления» сразу.</div>' : '';
+      var now2 = (older && whenGo) ? '<div class="sheet-sub">Для уже завершённых задач отсчёт начнётся сегодня: они уйдут из «Управления» ' + new Date(whenGo).toLocaleDateString('ru-RU', { day:'numeric', month:'long' }) + '.</div>' : '';
       openSheet('<h2>Изменить удаление завершённых задач?</h2><div class="sheet-sub">' + what + '</div>' + now2 +
         '<div class="sheet-actions"><button type="button" class="btn btn-secondary" id="adNo">Отмена</button><button type="button" class="btn btn-primary" id="adYes">Применить</button></div>');
       overlay.classList.add('ov-top');
@@ -5128,7 +5280,7 @@
       mainPull.set(function(){ closeSheet(); });
       var finish = function(ok){
         if(done) return; done = true; asking = false;
-        if(ok){ settings.autoDel = { mode: rule.mode, days: rule.mode === 'days' ? rule.days : settings.autoDel.days }; restore(); apply(); }
+        if(ok){ settings.autoDel = { mode: rule.mode, days: rule.mode === 'days' ? rule.days : settings.autoDel.days, since: Date.now() }; restore(); apply(); }
         else restore();
       };
       document.getElementById('adNo').addEventListener('click', function(){ finish(false); closeSheet(); });
@@ -5512,12 +5664,13 @@
 
   function backupJson(){
     // the backup leaves out the chosen theme and the priority word: they belong to this device's look, not to the data
-    var st = JSON.parse(JSON.stringify(settings)); if(st.ui){ delete st.ui.theme; delete st.ui.impText; } delete st.autoDel; delete st.deletedLock;
-    return JSON.stringify({ tasks: tasks, groups: groupsSorted(), spheres: spheresSorted(), settings: st, projects: projects ? projects.exportData() : [], deleted: projects ? projects.exportDeleted() : [], exportedAt: new Date().toISOString() }, null, 2);
+    var st = JSON.parse(JSON.stringify(settings)); if(st.ui){ delete st.ui.theme; delete st.ui.impText; } delete st.autoDel; delete st.deletedLock; delete st.notif; delete st.autoBackup;
+    return JSON.stringify({ tasks: tasks, groups: groupsSorted(), spheres: spheresSorted(), settings: st, projects: projects ? projects.exportData() : [], deleted: projects ? projects.exportDeleted() : [], statLog: statLog, exportedAt: new Date().toISOString() }, null, 2);
   }
   /* v47 §9.2: the backup is one ZIP archive (no compression — the pictures and the sound are packed already):
      planner-backup.json with all the data and media/{id of the record}/{file} with the attachments */
   function exportBackup(btn){
+    if(BK){ bkExport(btn); return; }                       // v53 §4.3: в приложении — архив с паролем, пишет обёртка
     var d = new Date();
     var fname = 'planner-backup-' + d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate()) + '.zip';
     var files = [{ name: 'planner-backup.json', data: new TextEncoder().encode(backupJson()) }, { name: 'media/', data: new Uint8Array(0) }];
@@ -5559,11 +5712,12 @@
     setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
   }
 
-  function importBackupFile(file, btn){
+  function importBackupFile(file, btn, after){
     var reader = new FileReader();
     reader.onload = function(){
       try{
         var media = null, parsed, mp = [], u8 = new Uint8Array(reader.result);
+        if(zipEncrypted(u8)){ importEncrypted(btn); return; }          // v53 §4.3: копия с паролем
         if(u8[0] === 0x50 && u8[1] === 0x4b){                          // «PK»: the new backup, a ZIP archive
           media = ATT.zipRead(reader.result);
           var jb = media.get('planner-backup.json'); if(!jb) throw new Error('no planner-backup.json');
@@ -5580,6 +5734,20 @@
            ends do not matter) among the groups of the sphere here; another one is added with a new id. A task's group is
            looked for in the task's own sphere here (an old backup's shared group gets a copy in each sphere of its tasks);
            a group with no tasks in the backup goes to its own sphere (or the first one). The tasks' links follow. */
+        /* v54.1 §5: the staff of a sphere that is already here (or the main one) gets the backup's names added, no name twice */
+        var impN = { added: 0, old: 0, skipped: 0 };
+        var staffJoin = function(sp, st){
+          if(!sp || !st) return;
+          var changed = false, o = JSON.parse(JSON.stringify(sp)); o.staff = o.staff || { managers: [], executors: [] };
+          ['managers', 'executors'].forEach(function(k){
+            var add = (Array.isArray(st[k]) ? st[k] : []).map(function(v){ return String(v || '').trim(); }).filter(Boolean);
+            if(!add.length) return;
+            var cur = staffFor(sp, k).slice();
+            add.forEach(function(v){ if(cur.indexOf(v) < 0){ cur.push(v); changed = true; } });
+            o.staff[k] = cur;
+          });
+          if(changed) persistSphere(o, true);
+        };
         var srcGroups = {}, gmap = {};
         if(parsed && Array.isArray(parsed.groups)) parsed.groups.forEach(function(src){ if(src && src.id) srcGroups[src.id] = src; });
         var groupFor = function(srcId, sid){
@@ -5599,10 +5767,10 @@
           var smx = spheres.reduce(function(m, x){ return Math.max(m, x.order); }, 0);
           parsed.spheres.forEach(function(src){
             if(!src || !src.id) return;
-            if(src.main || src.id === MAIN_SPH){ smap[src.id] = MAIN_SPH; return; }
+            if(src.main || src.id === MAIN_SPH){ smap[src.id] = MAIN_SPH; staffJoin(mainSphere(), src.staff); return; }
             var nm = String(src.name || '').trim().slice(0, 40) || 'Сфера';
             var same = spheres.filter(function(x){ return skey(x.name) === skey(nm); })[0];
-            if(same){ smap[src.id] = same.id; return; }
+            if(same){ smap[src.id] = same.id; staffJoin(same, src.staff); return; }
             var ns = normSphere(Object.assign({}, src, { id: uid(), main: false, name: nm, manual: false, mode: src.mode === 'off' ? 'off' : 'auto', order: ++smx, createdAt: Date.now() }));
             persistSphere(ns, true); smap[src.id] = ns.id;
           });
@@ -5624,10 +5792,11 @@
             var lin = String(src.origin || src.id || '');
             var kin = lin ? tasks.filter(function(x){ return lineage(x) === lin; }) : [];
             var sig = contentSig(t);
-            if(kin.some(function(x){ return contentSig(x) === sig; })) return;   // the very same version is already here
+            if(kin.some(function(x){ return contentSig(x) === sig; })){ impN.skipped++; return; }   // the very same version is already here
             var gNew = src.groupId ? groupFor(src.groupId, taskSphId(t)) : null; if(gNew) t.groupId = gNew;
             t.id = uid(); t.code = nextCode(type); t.origin = lin || t.id;
-            if(kin.length) t.oldCopy = true;
+            if(kin.length){ t.oldCopy = true; impN.old++; }
+            impN.added++;
             t.imported = true; t.sortAt = base + k; t.updatedAt = base + k;
             if(COMPLETED.indexOf(t.status) >= 0) t.doneAt = base + k; else delete t.doneAt;   // finished in the backup: the days count from the import
             if(!isFinite(t.createdAt)) t.createdAt = base + k;
@@ -5635,6 +5804,19 @@
             if(usingDb && dbCol) dbCol.doc(t.id).set(t).catch(function(e){ console.error(e); });
           });
           if(!(usingDb && dbCol)) saveLocal();
+          statSeedNew();                                  // v54.2 §8: the added tasks — «создано» by their creation time
+          /* v54.1 §5: a manager or executor named in an added task but in no list — into the list of the task's sphere
+             (its own list when it has one, else the common list), so the form offers it */
+          var commonAdd = false;
+          tasks.filter(function(x){ return x.imported && x.sortAt >= base; }).forEach(function(x){
+            var sp = sphereOf(x);
+            [['manager', 'managers'], ['executor', 'executors']].forEach(function(p){
+              var v = String(x[p[0]] || '').trim(); if(!v || staffFor(sp, p[1]).indexOf(v) >= 0) return;
+              if(sp && sp.staff && sp.staff[p[1]] && sp.staff[p[1]].length){ var o = JSON.parse(JSON.stringify(sp)); o.staff[p[1]].push(v); persistSphere(o, true); }
+              else { settings[p[1]] = (settings[p[1]] || []).concat([v]); commonAdd = true; }
+            });
+          });
+          if(commonAdd) persistSettings();
         }
         // the backup's groups none of whose tasks came: into their own sphere here (or the first one), unless one by that name is there
         Object.keys(srcGroups).forEach(function(id){
@@ -5658,21 +5840,26 @@
           if(kart) kart.applyUI();
           persistSettings();
         }
+        if(parsed && Array.isArray(parsed.statLog)) statLogMerge(parsed.statLog);   // v51 §1: the journal of the statistics
         if(parsed && Array.isArray(parsed.projects) && projects) mp.push(projects.importData(parsed.projects, media));
         if(parsed && Array.isArray(parsed.deleted) && projects) mp.push(projects.importDeleted(parsed.deleted, media));   // v46: the deleted records   // bottom drawer: projects and their records
         if(btn) flashBtn(btn);
         render();
         Promise.all(mp).then(function(rs){
+          if(after) after();
           var sk = 0; rs.forEach(function(r){ if(r) sk += r.skipped; });
-          if(sk){
-            openSubSheet('<h2>Не все вложения перенесены</h2><div class="sheet-sub">Файлов, которые не удалось скопировать: ' + sk + '. ' +
-              (ATT.ok ? 'Не хватило места на устройстве.' : 'Вложения записей хранятся только в приложении для Android.') + ' Записи остались, на месте этих файлов — заглушка.</div>' +
-              '<div class="sheet-actions"><button type="button" class="btn btn-primary" id="isOk">Понятно</button></div>');
-            var ok = document.getElementById('isOk'); if(ok) ok.addEventListener('click', closeSubSheet);
-          }
+          // v54.1 §5: what the import did
+          var sum = 'Добавлено задач: ' + impN.added + (impN.old ? ' (из них старых версий: ' + impN.old + ')' : '') + '. ' +
+            (impN.skipped ? 'Пропущено как уже имеющиеся: ' + impN.skipped + '.' : '');
+          var att = sk ? '<p class="unote" style="margin:4px 2px 12px">Не все вложения перенесены: файлов, которые не удалось скопировать, — ' + sk + '. ' +
+              (ATT.ok ? 'Не хватило места на устройстве.' : 'Вложения записей хранятся только в приложении для Android.') + ' Записи остались, на месте этих файлов — заглушка.</p>' : '';
+          openSubSheet('<h2>Импорт завершён</h2><div class="sheet-sub">' + sum + '</div>' + att +
+            '<div class="sheet-actions"><button type="button" class="btn btn-primary" id="isOk">Понятно</button></div>');
+          var ok = document.getElementById('isOk'); if(ok) ok.addEventListener('click', closeSubSheet);
         });
       }catch(e){
         console.error('import failed', e);
+        if(after) after();
       }
     };
     reader.readAsArrayBuffer(file);
@@ -5811,6 +5998,12 @@
           var again = function(msg){ if(overlay.hidden) return; pwAskSheet(title, sub, yesLabel, onOk, true); if(msg) pwErr(msg); };
           document.getElementById('fgNo').addEventListener('click', function(){ again(); });
           document.getElementById('fgYes').addEventListener('click', function(){
+            if(PRIV_UI && !netOn()){                         // v53 §4.1: без доступа в интернет ожидание не начинается
+              var fy = this; fy.textContent = 'Разрешить доступ';
+              var sub0 = overlay.querySelector('.sheet-sub'); if(sub0) sub0.textContent = NO_NET_MSG;
+              if(fy.__net) askNet(function(){ fy.textContent = 'Начать ожидание'; fy.__net = false; });
+              fy.__net = true; return;
+            }
             this.disabled = true; this.textContent = 'Проверяем время…'; document.getElementById('fgNo').disabled = true;
             serverNow().then(function(now){
               if(now === null){ again('Нет связи с сервером времени — повторите позже'); return; }
@@ -5820,7 +6013,7 @@
           });
         });
       } else {
-        more.innerHTML = '<div class="pw-wait">Смена пароля станет доступна ' + fmtWhen(L.resetAt) + '</div>';
+        more.innerHTML = '<div class="pw-wait">Смена пароля станет доступна ' + fmtWhen(L.resetAt) + (PRIV_UI && !netOn() ? '. Проверить окончание можно, когда разрешён доступ в интернет' : '') + '</div>';
         serverNow().then(function(now){
           var m = document.getElementById('pwMore'); if(!m || now === null || now < settings.deletedLock.resetAt) return;
           m.innerHTML = '<button type="button" class="pw-forgot" id="pwNew">Задать новый пароль</button>';
@@ -5869,7 +6062,8 @@
       '</div><p class="unote">Записи, удалённые из списков, лежат в нижнем ящике раздела «Отчёты» и там удаляются совсем, когда срок хранения выйдет. Срок считается от дня удаления; не меньше одного дня.</p>' +
       '<div class="uirows" style="margin-top:12px">' +
       '<label class="uirow"><span class="lbl">Открывать ящик по паролю<small>' + (on ? 'включено' : 'пароль будет спрашиваться при открытии ящика') + '</small></span>' + uiSwitch('dkLock', on) + '</label>' +
-      (on ? '<button type="button" class="uirow uopt" id="dkChange"><span class="lbl">Сменить пароль</span></button>' : '') + '</div>';
+      (on ? '<button type="button" class="uirow uopt" id="dkChange"><span class="lbl">Сменить пароль</span></button>' : '') + '</div>' +
+      '<p class="unote">Пароль закрывает ящик в приложении, но не шифрует записи — они хранятся на телефоне в обычном виде.</p>';
   }
   function wireDelBlock(box){
     function refresh(){ box.innerHTML = delBlockHtml(); wireDelBlock(box); }
@@ -6674,6 +6868,7 @@
     }
 
     if(t.type==='current'){
+      if(dueAt(t)){ var dd = new Date(dueAt(t)); html += f('Срок исполнения', dd.getDate() + ' ' + MONTHS_SH[dd.getMonth()] + ', ' + t.dueTime); }
       html += '<div class="ctrlblock"><div class="fs-title">КОНТРОЛЬ ВЫПОЛНЕНИЯ</div>' + buildDayControlGrid(t) + '</div>';
     } else if(t.type==='perspective'){
       html += '<div class="ctrlblock"><div class="fs-title">КОНТРОЛЬ ВЫПОЛНЕНИЯ</div>' + buildMonthControlGrid(t) + '</div>';
@@ -6810,7 +7005,7 @@
   }
 
   /* ---- task create / edit form ---- */
-  function openTaskForm(id, typeKey, sphId, draft){
+  function openTaskForm(id, typeKey, sphId, draft, preset){
     // v45 §4: draft — what was typed before the app was unloaded; the form opens with it
     var editing = !!id;
     var t = editing ? tasks.find(function(x){ return x.id===id; }) : blankTask(typeKey);
@@ -6831,14 +7026,19 @@
     var managerVal = t.manager || '';
     var executorVal = t.executor || '';
     var dueLocal = t.dueDate || null;
+    var dueTimeLocal = t.dueTime || '';                     // v54.1 §3
     var groupLocal = taskGroup(t) ? t.groupId : null;
     if(draft){
       if(Array.isArray(draft.sub)) subLocal = draft.sub;
       stgLocal = Array.isArray(draft.stg) && draft.stg.length ? draft.stg : null;
       if(Array.isArray(draft.dates)) datesLocal = draft.dates;
-      managerVal = draft.manager || ''; executorVal = draft.executor || ''; dueLocal = draft.due || null;
+      managerVal = draft.manager || ''; executorVal = draft.executor || ''; dueLocal = draft.due || null; dueTimeLocal = draft.dueTime || '';
       groupLocal = draft.groupLocal && groupById(draft.groupLocal) ? draft.groupLocal : null;
       if(!editing) sphLocal = draft.sphLocal && sphereById(draft.sphLocal) ? draft.sphLocal : sphLocal;
+    }
+    if(preset && !editing && !draft){                     // v52 §3.1: the preset of the widget «Быстрая задача»
+      managerVal = preset.manager || ''; executorVal = preset.executor || '';
+      groupLocal = preset.group && groupById(preset.group) ? preset.group : null;
     }
     // v44 §9: the sphere the task will be in — its groups are the ones offered (the base, or the first own sphere, when none is set)
     var formSph = function(){ return sphLocal ? (sphereById(sphLocal) && !sphereById(sphLocal).main ? sphLocal : (hasUserSpheres() ? null : MAIN_SPH)) : (hasUserSpheres() ? null : MAIN_SPH); };
@@ -6874,7 +7074,9 @@
 
       if(t.type==='current' || t.type==='perspective'){
         html += '<div class="field"><label>Срок исполнения</label>' +
-          '<div id="dueWrap"></div></div>';
+          '<div id="dueWrap"></div>' +
+          (t.type === 'current' ? '<div class="duetime"><label for="f_dueTime">Время</label><input type="time" id="f_dueTime" aria-label="Время срока исполнения"><span class="hint" id="f_dueTimeHint"></span></div>' : '') +
+          '</div>';
       }
 
       // v45 §2: «Средства» and «Знания, умения, навыки» stand below the term («Сроки»)
@@ -7225,6 +7427,20 @@
       });
     }
     if(t.type==='current' || t.type==='perspective') renderDueWrap();
+    /* v54.1 §3: «Время» — по желанию, только у текущих задач и только вместе с датой; пусто — срок до конца дня */
+    var fdt = document.getElementById('f_dueTime');
+    function syncDueTime(){
+      if(!fdt) return;
+      fdt.disabled = !dueLocal; if(!dueLocal) fdt.value = '';
+      var h = document.getElementById('f_dueTimeHint'); if(h) h.textContent = dueLocal ? (fdt.value ? '' : 'пусто — до конца дня') : 'сначала выберите день';
+    }
+    if(fdt){
+      fdt.value = dueTimeLocal || '';
+      fdt.addEventListener('input', function(){ dueTimeLocal = fdt.value; syncDueTime(); });
+      fdt.addEventListener('change', function(){ dueTimeLocal = fdt.value; syncDueTime(); });
+      syncDueTime();
+      var dw = document.getElementById('dueWrap'); if(dw) dw.addEventListener('click', function(){ setTimeout(syncDueTime, 0); });
+    }
 
     function renderCalendars(){
       var wrap = document.getElementById('calWrap');
@@ -7258,7 +7474,7 @@
         var k = kv.split(':'), v = gv(k[1]); if(v !== null) f[k[0]] = v;
       });
       return { id: editing ? id : null, typeKey: t.type, base: baseUpd, sphLocal: sphLocal, groupLocal: groupLocal, f: f,
-        sub: JSON.parse(JSON.stringify(subLocal)), stg: stg, dates: datesLocal.slice(), manager: managerVal, executor: executorVal, due: dueLocal };
+        sub: JSON.parse(JSON.stringify(subLocal)), stg: stg, dates: datesLocal.slice(), manager: managerVal, executor: executorVal, due: dueLocal, dueTime: dueTimeLocal };
     }
     var draftSig0 = null;
     function saveTaskDraft(){
@@ -7302,6 +7518,8 @@
       }
       if(isPeriodic) t.scheduledDates = datesLocal.slice();
       if(t.type==='current' || t.type==='perspective') t.dueDate = dueLocal || null;
+      var tv0 = hhmm(dueTimeLocal);
+      if(t.type === 'current' && t.dueDate && tv0) t.dueTime = tv0; else delete t.dueTime;   // v54.1 §3
       persistTask(t);
       closeSheet();
       render();
@@ -7415,6 +7633,7 @@
     sheetEl.querySelectorAll('.typeopt').forEach(function(btn){
       btn.addEventListener('click', function(){
         var k = btn.getAttribute('data-k');
+        statLogAdd(t, 'moved', 0, k);            // v51 §1: «переведено в категорию» — a way of finishing; v54.2: added in the new one
         t.type = k; t.code = nextCode(k); t.status = 'process';
         if(t.oldCopy) delete t.oldCopy;          // an old version moved to another category: no longer a duplicate
         persistTask(t); closeSheet(); render();
@@ -9136,7 +9355,15 @@
     }
     // while a window is open the app behind it (the cabinet with its 3D folders) is not drawn at all:
     // the phone then composes only the window, and its own animations (the field, the lists) have the GPU to themselves
-    function hideBehind(on){ recede.forEach(function(el){ el.style.visibility = on ? 'hidden' : ''; }); }
+    /* v54.1 §4: before the app behind the window is hidden, the opening's held state (scale 1.08, the point it shrinks to,
+       the transparency) is dropped — otherwise the phone keeps that enlarged picture of it and shows it for a frame or two
+       on the way back («бросок»: bigger and shifted to a corner) */
+    function hideBehind(on){
+      recede.forEach(function(el){
+        if(on){ el.getAnimations().forEach(function(a){ a.cancel(); }); el.style.transformOrigin = ''; el.style.opacity = ''; }
+        el.style.visibility = on ? 'hidden' : '';
+      });
+    }
     function clearFx(pnl){
       hideBehind(false);
       recede.forEach(function(el){ el.getAnimations().forEach(function(a){ a.cancel(); }); el.style.transformOrigin = ''; el.style.opacity = ''; });
@@ -10981,10 +11208,806 @@
     window.__kartPin = { pin: pin, release: function(){ tryUnpin(); } };
   })();
 
+  /* ================= v51 §1–§2: the snapshot for the Android app and the plan of the reminders =================
+     The data change only here, in the app, so everything the notifications (and, from v52, the widgets) need is counted
+     here beforehand and handed to the app as ready JSON: AndroidBridge.pushSnapshot(kind, json) → files/snapshot/{kind}.json.
+     The app counts nothing of the tasks' logic — it only shows what it is given and keeps the time.
+       dict    — spheres (with their groups and staff), categories, the lists of managers and executors, the theme's colours
+       plan    — the reminders for 14 days ahead: [{ id, at, channel, title, text, lines?, open }]
+       spheres — when each sphere is active, for 14 days: { 'YYYY-MM-DD': [{ id, color, from, to }] } (minutes of the day)
+       stats   — { events: [{ t, kind, sph, typ, to? }] (statLog; v54.2: + new, del), archNow: { sphere id: tasks in the archive now },
+                   periodic: [{ d, sph, ok }] (days of periodic tasks before today), dues: [{ d, f, sph, typ }] (terms) }
+     Sent at the start, 2 s after the last change of the data and at once when the app goes to the background; only the
+     kinds that changed. Only in the Android app (the bridge has pushSnapshot); in the artifact and a browser — nothing. */
+  var SNAP = !!(window.AndroidBridge && typeof window.AndroidBridge.pushSnapshot === 'function');
+  var NTF_UI = SNAP && typeof window.AndroidBridge.notifPermission === 'function';
+  var SNAP_DAYS = 14;
+  var snapSent = {}, snapT = 0;
+  function snapReady(){ return dataSeen.tasks && dataSeen.groups && dataSeen.spheres && settingsReady; }
+  function snapSoon(){ if(!SNAP) return; clearTimeout(snapT); snapT = setTimeout(snapFlush, 2000); }
+  function snapFlush(){
+    clearTimeout(snapT); snapT = 0;
+    if(!SNAP || !snapReady()) return;
+    statLogInit();
+    var now = Date.now();
+    var kinds = { dict: buildDict, plan: function(){ return buildPlan(now); }, spheres: function(){ return buildSphereDays(now); }, stats: buildStats };
+    Object.keys(kinds).forEach(function(k){
+      var js;
+      try{ js = JSON.stringify(kinds[k]()); }catch(e){ console.error('snapshot ' + k, e); return; }
+      if(snapSent[k] === js) return;
+      try{ if(window.AndroidBridge.pushSnapshot(k, js) !== false) snapSent[k] = js; }catch(e){ console.error('pushSnapshot', e); }
+    });
+  }
+  document.addEventListener('visibilitychange', function(){ if(document.hidden) snapFlush(); });
+  window.addEventListener('pagehide', function(){ snapFlush(); });
+
+  function day0Of(ms){ var d = new Date(ms); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function dayAdd(d, k){ return new Date(d.getFullYear(), d.getMonth(), d.getDate() + k); }
+  function atOn(d, min){ return new Date(d.getFullYear(), d.getMonth(), d.getDate(), Math.floor(min / 60), min % 60).getTime(); }
+  function cutT(s, n){ s = String(s || '').replace(/\s+/g, ' ').trim() || 'Без названия'; return s.length > n ? s.slice(0, n - 1) + '…' : s; }
+  // the spheres the snapshot speaks of: the own ones, or the base while there are none
+  function snapSpheres(){ return hasUserSpheres() ? userSpheres() : [mainSphere()]; }
+  // the sphere is active at some time of day d (by its switch and schedule)
+  function sphOnDay(s, d){
+    if(!s) return false;
+    if(s.main) return !hasUserSpheres();
+    if(s.mode === 'off') return false;
+    if(s.mode === 'on') return true;
+    return hasDays(s) && isSphDay(s, d) && !pausedOn(s, d);
+  }
+  // the minutes of day d when the sphere is active: [[from, to]] within 0…1440 (a span over midnight gives a piece on each day)
+  function sphSpans(s, d){
+    if(s.main) return hasUserSpheres() ? [] : [[0, 1440]];
+    if(s.mode === 'off') return [];
+    if(s.mode === 'on') return [[0, 1440]];
+    if(!hasDays(s)) return [];
+    var y = dayAdd(d, -1), today = isSphDay(s, d) && !pausedOn(s, d), prev = isSphDay(s, y) && !pausedOn(s, y), out = [];
+    if(!s.hours.length) return today ? [[0, 1440]] : [];
+    s.hours.forEach(function(h){
+      var a = minOf(h.from), b = minOf(h.to);
+      if(a < b){ if(today) out.push([a, b]); }
+      else { if(today) out.push([a, 1440]); if(prev && b > 0) out.push([0, b]); }
+    });
+    return out.sort(function(p, q){ return p[0] - q[0]; });
+  }
+  // a task the reminders may speak of on day d: in work, of a sphere that is neither off nor on a pause that day
+  function ntfSphere(t, d){
+    if(!t || COMPLETED.indexOf(t.status) >= 0 || t.noSphere) return null;
+    var s = sphereOf(t); if(!s) return null;
+    if(!s.main && (s.mode === 'off' || (s.mode !== 'on' && pausedOn(s, d)))) return null;
+    return s;
+  }
+  /* the theme's colours for the widgets and notifications: those of the mode on the screen now; the other mode's — as they were
+     the last time it was on the screen (kept on the device) */
+  var SNAPCOL_KEY = 'planner_snap_colors_v1';
+  function snapColors(){
+    var all = {}; try{ all = JSON.parse(localStorage.getItem(SNAPCOL_KEY) || '{}') || {}; }catch(e){ all = {}; }
+    var th = (typeof themeId === 'function' && themeId()) || settings.ui.theme, mode = isDarkNow() ? 'dark' : 'light';
+    try{
+      var tb = document.querySelector('.topbar'), app = document.getElementById('app');
+      if(tb && app){
+        var ct = getComputedStyle(tb), ca = getComputedStyle(app), v = function(cs, k){ return cs.getPropertyValue(k).trim(); };
+        var pick = function(k){ return v(ct, k) || v(ca, k); };     // the theme's variables are set on the zones (.topbar), not on #app
+        var cur = { bg: pick('--bg'), text: pick('--text'), dim: pick('--text-dim'), card: pick('--surface'), accent: themeAccent() };
+        all[th] = all[th] || {}; all[th][mode] = cur;
+        try{ localStorage.setItem(SNAPCOL_KEY, JSON.stringify(all)); }catch(e){}
+      }
+    }catch(e){}
+    var mine = all[th] || {};
+    return { light: mine.light || null, dark: mine.dark || null };
+  }
+  /* v54.2 §2.6: the public page of the app (presentation on GitHub) sent with «Поделиться»; empty — the text goes without a link */
+  var SHARE_URL = '';
+  function buildDict(){
+    return {
+      name: settings.plannerName, theme: settings.ui.theme, colors: snapColors(),
+      spheres: snapSpheres().map(function(s){
+        return { id: s.id, name: s.main ? MAIN_SPH_NAME : (s.name || 'Сфера'), color: s.color, mode: s.mode, main: !!s.main,
+          managers: staffFor(s, 'managers'), executors: staffFor(s, 'executors'),
+          groups: groupsOf(s.id).map(function(g){ return { id: g.id, name: g.name || 'Группа', color: g.color || null }; }) };
+      }),
+      categories: TYPE_ORDER.map(function(k){ return { id: k, name: TYPES[k].label, short: SEG_LABELS[k], code: TYPES[k].code, color: typeColor(k) }; }),
+      managers: (settings.managers || []).slice(), executors: (settings.executors || []).slice()
+      , shareUrl: SHARE_URL                               // v54.2 §2.6: the link sent with the «Процент выполнения» card
+      , bar: !!(normNotif(settings.notif).on && normNotif(settings.notif).sphereBar)   // v52 §3.3: the strip in the notification shade
+    };
+  }
+  function buildSphereDays(now){
+    var d0 = day0Of(now), out = {};
+    for(var k = 0; k < SNAP_DAYS; k++){
+      var d = dayAdd(d0, k), list = [];
+      snapSpheres().forEach(function(s){ sphSpans(s, d).forEach(function(p){ list.push({ id: s.id, color: s.color, from: p[0], to: p[1] }); }); });
+      out[dayIso(d)] = list;
+    }
+    return out;
+  }
+  function buildStats(){
+    var arch = {};
+    tasks.forEach(function(t){ if(t && t.status === 'archived'){ var k = taskSphId(t) || ''; arch[k] = (arch[k] || 0) + 1; } });
+    /* v54.1 §6: the category of each finished task (for «Текущих», «Перспективных», «Порядок») and the terms of the periodic
+       tasks that have come (each date of a periodic task up to today — «Периодических»: сколько раз наступал срок) */
+    var typeOf = {}; tasks.forEach(function(t){ if(t && t.id) typeOf[t.id] = t.type; });
+    var ti = todayISO(), from = dayIso(dayAdd(day0Of(Date.now()), -400)), per = [];
+    tasks.forEach(function(t){
+      if(!t || t.type !== 'periodic') return;
+      var sp = taskSphId(t) || '';
+      /* v54.2: today's date is not counted (it comes in tomorrow); ok — the day is ticked in «Дни выполнения» */
+      var dn = t.datesDone || [];
+      (t.scheduledDates || []).forEach(function(d){ if(d < ti && d >= from) per.push({ d: d, sph: sp, ok: dn.indexOf(d) >= 0 }); });
+    });
+    /* v54.2 §2: the terms of current and perspective tasks — a task not finished by its term counts as overdue
+       (d — the end of the term, f — when it was finished, 0 — not yet) */
+    var lim = Date.now() - STATLOG_DAYS * 86400000, dues = [];
+    tasks.forEach(function(t){
+      if(!t || (t.type !== 'current' && t.type !== 'perspective')) return;
+      var e = dueEnd(t); if(!e) return;
+      var at = dueAt(t) || (dayAdd(day0Of(e.getTime()), 1).getTime() - 1);
+      if(at < lim) return;
+      dues.push({ d: at, f: COMPLETED.indexOf(t.status) >= 0 ? (+t.doneAt || 0) : 0, sph: taskSphId(t) || '', typ: t.type });
+    });
+    return { events: statLog.map(function(e){ var o = { t: e.t, kind: e.kind, sph: e.sph, typ: e.typ || typeOf[e.taskId] || '' }; if(e.to) o.to = e.to; return o; }), archNow: arch, periodic: per, dues: dues };
+  }
+  /* the reminders for 14 days ahead (§2). channel: summary | due | periodic | sphere; open: what a tap on it opens.
+     Without the main switch the plan is empty (the app then takes back the alarms already set). The last line of the plan
+     says that the app has not been opened for long and the reminders after it are not made. */
+  function buildPlan(now){
+    var N = normNotif(settings.notif); if(!N.on) return [];
+    var d0 = day0Of(now), dEnd = dayAdd(d0, SNAP_DAYS), tmin = minOf(N.time), out = [];
+    var push = function(o){ if(o.at > now) out.push(o); };
+    for(var k = 0; k < SNAP_DAYS; k++){
+      var d = dayAdd(d0, k), iso = dayIso(d), at = atOn(d, tmin);
+      if(N.summary){
+        var per = [], due = [], late = [];
+        tasks.forEach(function(t){
+          var s = ntfSphere(t, d); if(!s || !sphOnDay(s, d)) return;
+          if(t.type === 'periodic'){ var sd = t.scheduledDates || []; if(!sd.length || sd.indexOf(iso) >= 0) per.push(t); return; }
+          var e = dueEnd(t); if(!e) return;
+          if(e < d || (dueAt(t) && dueAt(t) < at)) late.push(t); else if(dayIso(e) === iso) due.push(t);
+        });
+        var n = per.length + due.length;
+        if(n || late.length){
+          var txt = n ? 'Сегодня ' + n + ' ' + plural3(n, ['задача', 'задачи', 'задач']) : 'Просрочено задач: ' + late.length;
+          if(n && late.length) txt += ', ' + late.length + ' ' + plural3(late.length, ['просрочена', 'просрочены', 'просрочено']);
+          var lines = due.concat(per).map(function(t){ return cutT(t.title, 60); })
+            .concat(late.map(function(t){ return cutT(t.title, 46) + ' — срок вышел'; })).slice(0, 7);
+          push({ id: 'sum:' + iso, at: at, channel: 'summary', title: 'Сводка на сегодня', text: txt, lines: lines, open: { tab: 'summary', cat: 'all' } });
+        }
+      }
+      if(N.periodic){
+        var pl = tasks.filter(function(t){
+          var s = t.type === 'periodic' && ntfSphere(t, d);
+          return !!s && sphOnDay(s, d) && (t.scheduledDates || []).indexOf(iso) >= 0 && (t.datesDone || []).indexOf(iso) < 0;
+        });
+        if(pl.length) push({ id: 'per:' + iso, at: at, channel: 'periodic',
+          title: pl.length === 1 ? 'Сегодня: ' + cutT(pl[0].title, 60) : 'Сегодня ' + pl.length + ' ' + plural3(pl.length, ['периодическая задача', 'периодические задачи', 'периодических задач']),
+          text: pl.length === 1 ? 'Периодическая задача' : pl.map(function(t){ return cutT(t.title, 40); }).join(', '),
+          lines: pl.length > 1 ? pl.map(function(t){ return cutT(t.title, 60); }).slice(0, 7) : null,
+          open: { tab: 'summary', cat: 'periodic' } });
+      }
+      if(N.sphereStart && hasUserSpheres()) userSpheres().forEach(function(s){
+        if(s.mode !== 'auto' || !hasDays(s)) return;
+        var nm = cutT(s.name || 'Сфера', 40);
+        if(!s.hours.length){                     // a sphere of whole days: in the morning, on the first of its days in a row
+          if(sphOnDay(s, d) && !sphOnDay(s, dayAdd(d, -1)))
+            push({ id: 'sph:' + s.id + ':' + iso, at: at, channel: 'sphere', title: 'Сегодня сфера «' + nm + '»', text: 'Активна весь день', open: { spheres: true } });
+          return;
+        }
+        if(!isSphDay(s, d) || pausedOn(s, d)) return;
+        s.hours.forEach(function(h, j){
+          push({ id: 'sph:' + s.id + ':' + iso + ':' + j, at: atOn(d, minOf(h.from)), channel: 'sphere',
+            title: 'Началась сфера «' + nm + '»', text: 'До ' + h.to, open: { spheres: true } });
+        });
+      });
+    }
+    // the terms: on the day, or 1 / 3 / 7 days before (a perspective task's term is the last day of its month)
+    if(N.before.length) tasks.forEach(function(t){
+      if(t.type !== 'current' && t.type !== 'perspective') return;
+      var e = dueEnd(t); if(!e) return;
+      N.before.forEach(function(b){
+        var d = dayAdd(e, -b); if(d < d0 || d >= dEnd || !ntfSphere(t, d)) return;
+        var when = b === 0 ? 'Сегодня срок исполнения' : b === 1 ? 'Завтра срок исполнения' : 'Через ' + b + ' ' + plural3(b, ['день', 'дня', 'дней']) + ' срок исполнения';
+        var tail = t.type === 'perspective' ? ' · ' + MONTH_NAMES_RU[e.getMonth()].toLowerCase() + ' ' + e.getFullYear() : '';
+        var at = atOn(d, tmin), da = dueAt(t);
+        if(b === 0 && da) at = Math.max(d.getTime(), Math.min(at, da - 3600000));   // v54.1 §3: не позже чем за час до срока
+        if(b === 0 && da) tail = ' · до ' + t.dueTime;
+        push({ id: 'due:' + t.id + ':' + b, at: at, channel: 'due', title: when, text: cutT(t.title, 90) + tail, open: { task: t.id } });
+      });
+    });
+    // v54.1 §3: за 3 часа и за 1 час до точного срока
+    if(N.hours.length) tasks.forEach(function(t){
+      var da = dueAt(t); if(!da) return;
+      N.hours.forEach(function(h){
+        var at = da - h * 3600000; if(at <= now || at >= dEnd.getTime() || !ntfSphere(t, new Date(at))) return;
+        push({ id: 'dueh:' + t.id + ':' + h, at: at, channel: 'due', title: 'Через ' + h + ' ' + plural3(h, ['час', 'часа', 'часов']) + ' срок исполнения',
+          text: cutT(t.title, 90) + ' · до ' + t.dueTime, open: { task: t.id } });
+      });
+    });
+    out.sort(function(a, b){ return a.at - b.at; });
+    out = out.slice(0, 300);
+    out.push({ id: 'stale', at: atOn(dEnd, tmin), channel: 'summary', title: 'Планировщик давно не открывали',
+      text: 'Напоминания дальше не составлены — откройте Планировщик', open: { tab: 'summary', cat: 'all' } });
+    return out;
+  }
+
+  /* ---- «Напоминания» in «Параметры → Основные» (Android app only) ---- */
+  var ntfAsk = null, ntfDenied = false;
+  window.onAndroidNotifPerm = function(granted){ var f = ntfAsk; ntfAsk = null; if(f) f(!!granted); };
+  function ntfPerm(){ try{ return String(window.AndroidBridge.notifPermission() || 'ask'); }catch(e){ return 'ask'; } }
+  function ntfBattOk(){ try{ return typeof window.AndroidBridge.batteryFree === 'function' && !!window.AndroidBridge.batteryFree(); }catch(e){ return false; } }
+  function ntfBlockHtml(){
+    var N = normNotif(settings.notif), perm = ntfPerm(), blocked = perm !== 'granted';
+    var st = N.on ? (blocked ? '<span class="ntf-warn">уведомления запрещены в настройках Android</span>' : 'приходят, даже когда Планировщик закрыт')
+                  : (ntfDenied ? '<span class="ntf-warn">Разрешите уведомления в настройках Android</span>' : 'выключены');
+    var h = '<div class="sg-title">Напоминания</div><div class="uirows">' +
+      '<label class="uirow"><span class="lbl">Напоминания<small>' + st + '</small></span>' + uiSwitch('ntfOn', N.on) + '</label>';
+    if((N.on && blocked) || (!N.on && ntfDenied))
+      h += '<button type="button" class="uirow uopt" id="ntfSys"><span class="lbl">Открыть настройки<small>уведомления Планировщика в настройках Android</small></span></button>';
+    h += '</div>';
+    h += '<div class="uirows' + (N.on ? '' : ' ntf-off') + '" style="margin-top:12px"' + (N.on ? '' : ' inert') + '>' +
+      '<label class="uirow"><span class="lbl">Утренняя сводка<small>сколько задач на сегодня и сколько просрочено</small></span>' + uiSwitch('ntfSum', N.summary) + '</label>' +
+      '<label class="uirow"><span class="lbl">Время напоминаний<small>все, кроме начала сферы</small></span>' +
+        '<input type="time" class="ntf-time" id="ntfTime" value="' + N.time + '" aria-label="Время напоминаний"></label>' +
+      '<div class="uirow ntf-dayrow"><span class="lbl">Срок исполнения<small>у перспективных задач срок — последний день месяца; «за 3 часа» и «за 1 час» — для задач с точным временем срока</small></span>' +
+        '<div class="ntf-days" role="group" aria-label="Когда напоминать о сроке">' + NTF_BEFORE.map(function(o){
+          var on = N.before.indexOf(o[0]) >= 0;
+          return '<button type="button" class="ntf-day' + (on ? ' on' : '') + '" aria-pressed="' + on + '" data-nb="' + o[0] + '">' + o[1] + '</button>';
+        }).join('') + NTF_HOURS.map(function(o){
+          var on = N.hours.indexOf(o[0]) >= 0;
+          return '<button type="button" class="ntf-day' + (on ? ' on' : '') + '" aria-pressed="' + on + '" data-nh="' + o[0] + '">' + o[1] + '</button>';
+        }).join('') + '</div></div>' +
+      '<label class="uirow"><span class="lbl">Периодические задачи<small>в их дни: «Сегодня: Полив цветов»</small></span>' + uiSwitch('ntfPer', N.periodic) + '</label>' +
+      '<label class="uirow"><span class="lbl">Начало сферы<small>когда сфера «по расписанию» становится активной</small></span>' + uiSwitch('ntfSph', N.sphereStart) + '</label>' +
+      // v52 §3.3: the strip of the day with the spheres, kept in the notification shade (and so on the lock screen)
+      '<label class="uirow"><span class="lbl">Полоса сфер в шторке<small>сферы на сутки в шторке уведомлений и на экране блокировки</small></span>' + uiSwitch('ntfBar', N.sphereBar) + '</label>' +
+      '</div>';
+    h += '<div class="uirows" style="margin-top:12px"><button type="button" class="uirow uopt" id="ntfBatt"><span class="lbl">Не приходят напоминания?<small>' +
+      (ntfBattOk() ? 'экономия батареи для Планировщика уже выключена' : 'выключите для Планировщика экономию батареи — некоторые телефоны останавливают фоновые напоминания') +
+      '</small></span></button></div>';
+    h += '<p class="unote">Не напоминается о задачах выключенных сфер и сфер на паузе, о завершённых задачах. Напоминания составляются на 14 дней вперёд — откройте Планировщик хотя бы раз за это время. Звук и вид каждого вида напоминаний («Сводка», «Сроки», «Периодические», «Сферы») меняются в настройках Android. Полосу сфер в шторке на Android 14 и новее можно смахнуть — она вернётся при следующем обновлении, а насовсем убирается этим переключателем.</p>';
+    return h;
+  }
+  function wireNtfBlock(box){
+    if(!box) return;
+    function refresh(){ if(box.isConnected){ box.innerHTML = ntfBlockHtml(); wireNtfBlock(box); } }
+    function set(k, v){ var N = normNotif(settings.notif); N[k] = v; settings.notif = normNotif(N); persistSettings(); }
+    var on = box.querySelector('#ntfOn');
+    on.addEventListener('change', function(){
+      if(!on.checked){ set('on', false); ntfDenied = false; refresh(); return; }
+      var p = ntfPerm();
+      if(p === 'granted'){ ntfDenied = false; set('on', true); refresh(); return; }
+      on.checked = false;
+      if(p === 'ask'){
+        ntfAsk = function(ok){ ntfDenied = !ok; if(ok) set('on', true); refresh(); };
+        try{ window.AndroidBridge.requestNotifPermission(); }catch(e){ ntfAsk = null; ntfDenied = true; refresh(); }
+        return;
+      }
+      ntfDenied = true; refresh();                   // refused for good: the switch stays off, the way to the settings is shown
+    });
+    var sys = box.querySelector('#ntfSys');
+    if(sys) sys.addEventListener('click', function(){ try{ window.AndroidBridge.openNotifSettings(); }catch(e){} });
+    var batt = box.querySelector('#ntfBatt');
+    if(batt) batt.addEventListener('click', function(){ try{ window.AndroidBridge.openBatterySettings(); }catch(e){} });
+    [['#ntfSum', 'summary'], ['#ntfPer', 'periodic'], ['#ntfSph', 'sphereStart'], ['#ntfBar', 'sphereBar']].forEach(function(p){
+      var el = box.querySelector(p[0]); if(el) el.addEventListener('change', function(){ set(p[1], el.checked); });
+    });
+    var tm = box.querySelector('#ntfTime');
+    if(tm) tm.addEventListener('change', function(){ var v = hhmm(tm.value); if(v){ set('time', v); } else tm.value = normNotif(settings.notif).time; });
+    box.querySelectorAll('.ntf-day[data-nh]').forEach(function(b){
+      b.addEventListener('click', function(){
+        var n = +b.getAttribute('data-nh'), cur = normNotif(settings.notif).hours.slice(), i = cur.indexOf(n);
+        if(i >= 0) cur.splice(i, 1); else cur.push(n);
+        set('hours', cur);
+        var onNow = cur.indexOf(n) >= 0; b.classList.toggle('on', onNow); b.setAttribute('aria-pressed', onNow);
+      });
+    });
+    box.querySelectorAll('.ntf-day[data-nb]').forEach(function(b){
+      b.addEventListener('click', function(){
+        var n = +b.getAttribute('data-nb'), cur = normNotif(settings.notif).before.slice(), i = cur.indexOf(n);
+        if(i >= 0) cur.splice(i, 1); else cur.push(n);
+        set('before', cur);
+        var onNow = cur.indexOf(n) >= 0; b.classList.toggle('on', onNow); b.setAttribute('aria-pressed', onNow);
+      });
+    });
+  }
+  // back from the system settings: the block shows the permission as it is now
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden || !NTF_UI) return;
+    var b = document.getElementById('ntfBlock');
+    if(b && !(document.activeElement && b.contains(document.activeElement))){
+      if(ntfPerm() === 'granted') ntfDenied = false;
+      b.innerHTML = ntfBlockHtml(); wireNtfBlock(b);
+    }
+  });
+
+  /* ---- a tap on a notification: the app opens where it points (§2) ----
+     { task: id } — the card of the task; { tab, cat } — a section (and a category of «Сводка»); { spheres: true } — the window
+     of spheres. Comes at the start (AndroidBridge.takeIntent) or while the app is open (window.onAndroidIntent). A form being
+     filled in is not closed for it. */
+  function goSection(tab, cat){
+    if(['summary', 'manage', 'archive', 'reports'].indexOf(tab) < 0) return;
+    currentTab = tab; sphSel = null;
+    document.querySelectorAll('.navbtn[data-tab]').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-tab') === tab); });
+    if(tab === 'summary' && cat && (cat === 'all' || TYPES[cat])) summaryFilter = cat;
+    if(kart) kart.closeNow();
+    render();
+  }
+  function openFromAndroid(o){
+    if(typeof o === 'string'){ try{ o = JSON.parse(o); }catch(e){ return; } }
+    if(!o || typeof o !== 'object') return;
+    if(!overlay.hidden || !subOverlay.hidden || (projects && projects.isOpen())) return;
+    if(leftDrawerOpen) closeLeftDrawer();
+    if(rightDrawerOpen) closeRightDrawer();
+    if(o.spheres){ if(sphWin && !sphWin.isOpen()) sphWin.open(); return; }
+    if(o.newTask){ if(sphWin && sphWin.isOpen()) return; openPresetTask(o.newTask); return; }
+    if(sphWin && sphWin.isOpen()) return;
+    if(o.task){ var t = tasks.find(function(x){ return x.id === o.task; }); if(t){ openTaskDetail(t.id); return; } }
+    if(o.tab) goSection(o.tab, o.cat);
+  }
+  /* v52 §3.1: the widget «Быстрая задача» — the form of a new task with the fields of its preset filled in: the sphere,
+     the group, the category, the manager and the executor; the cursor in «Задача» and the keyboard up. A sphere or a group
+     that is gone is left out (the form then offers the choice as usual); a draft being restored goes first. */
+  function openPresetTask(p){
+    if(!p || typeof p !== 'object') return;
+    var tries = 0;
+    (function wait(){
+      if(++tries > 40) return;
+      var ready = dataSeen.tasks && dataSeen.groups && dataSeen.spheres && !document.documentElement.classList.contains('booting');
+      if(!ready){ setTimeout(wait, 150); return; }
+      if(draftGet(DRAFT_TASK) || !overlay.hidden || !subOverlay.hidden || (projects && projects.isOpen())) return;
+      var cat = TYPES[p.cat] ? p.cat : null;
+      var sp = p.sph && sphereById(p.sph) ? sphereById(p.sph) : null;
+      var sid = sp ? sp.id : (hasUserSpheres() ? null : MAIN_SPH);
+      if(!cat){ openTaskTypePicker(sid); return; }
+      var g = p.group && groupById(p.group) && grpSphId(groupById(p.group)) === (sp && !sp.main ? sp.id : (hasUserSpheres() ? null : MAIN_SPH)) ? p.group : null;
+      openTaskForm(null, cat, sid, null, { manager: String(p.manager || ''), executor: String(p.executor || ''), group: g });
+      setTimeout(function(){
+        var ti = document.getElementById('f_title'); if(!ti) return;
+        try{ ti.focus({ preventScroll: true }); }catch(_){ ti.focus(); }
+        try{ var A = window.AndroidBridge; if(A && typeof A.showKeyboard === 'function') A.showKeyboard(); }catch(_){}
+      }, 260);
+    })();
+  }
+  window.onAndroidIntent = function(j){ setTimeout(function(){ openFromAndroid(j); }, 0); };
+
+  /* ================= v53: сохранность и конфиденциальность (только в приложении Android) =================
+     §4.1 «Конфиденциальность»: доступ в интернет — только по решению человека (обёртка не пускает ни одного запроса, пока он
+     выключен; шрифты встроены в приложение). §4.3 резервные копии в приложении шифруются паролем резервных копий: и автокопии,
+     и ручной «Экспорт»; архив пишет обёртка (ZIP AES-256), вложения она берёт сама из своей папки. §4.4 забытый пароль копий
+     меняется только после 7 суток ожидания по времени сервера, всё это время на главном экране видна плашка. */
+  var PRIV_UI = !!(window.AndroidBridge && typeof window.AndroidBridge.netAllowed === 'function');
+  var BK = !!(window.AndroidBridge && typeof window.AndroidBridge.exportEncrypted === 'function');
+  var BK_DAY = 86400000, BK_WAIT = 7 * BK_DAY;
+  var TIME_HOSTS = 'worldtimeapi.org, timeapi.io';
+  function AB(){ return normAutoBackup(settings.autoBackup); }
+  function setAB(k, v){ var o = AB(); o[k] = v; settings.autoBackup = normAutoBackup(o); persistSettings(); }
+  function netOn(){ if(!PRIV_UI) return true; try{ return !!window.AndroidBridge.netAllowed(); }catch(e){ return false; } }
+  function bkHasPw(){ try{ return !!window.AndroidBridge.backupHasPassword(); }catch(e){ return false; } }
+
+  /* ---------- §4.1: «Доступ в интернет» ---------- */
+  var NET_WHY = 'Доступ нужен только для точного времени с сервера — при «Забыл пароль» на ящике «Удалённые записи» и при смене забытого пароля резервных копий: так ожидание нельзя обойти переводом часов.';
+  function privBlockHtml(){
+    var on = netOn();
+    return '<div class="sg-title">Конфиденциальность</div><div class="uirows">' +
+      '<label class="uirow"><span class="lbl">Доступ в интернет<small>' + (on ? 'разрешён' : 'выключен — приложение никуда не обращается') + '</small></span>' + uiSwitch('netOn', on) + '</label></div>' +
+      '<p class="unote">Приложение работает без интернета. Задачи, списки, записи и вложения хранятся только на этом телефоне и никуда не передаются. ' + NET_WHY + '</p>' +
+      lockBlockHtml();                                     // v54 §5.1
+  }
+  function wirePrivBlock(box){
+    if(!box) return;
+    wireLockBlock(box);                                    // v54 §5.1
+    var sw = box.querySelector('#netOn');
+    sw.addEventListener('change', function(){
+      if(!sw.checked){ try{ window.AndroidBridge.setNetAllowed(false); }catch(e){} privRefresh(); return; }
+      sw.checked = false;
+      askNet(function(){ privRefresh(); });
+    });
+  }
+  function privRefresh(){ var b = document.getElementById('privBlock'); if(b){ b.innerHTML = privBlockHtml(); wirePrivBlock(b); } }
+  /* «Разрешить доступ в интернет?» — onAllowed() после «Разрешить» */
+  function askNet(onAllowed, onNo){
+    var html = '<h2>Разрешить доступ в интернет?</h2><div class="sheet-sub">' + NET_WHY + '</div>' +
+      '<p class="unote" style="margin:0 2px 14px">Серверы точного времени: ' + TIME_HOSTS + '. Передаются только обычные данные запроса (адрес IP, сведения о браузере). Выключить доступ можно в любой момент: «Параметры» → «Основные» → «Конфиденциальность».</p>' +
+      '<div class="sheet-actions"><button type="button" class="btn btn-secondary" id="netNo">Отмена</button><button type="button" class="btn btn-primary" id="netYes">Разрешить</button></div>';
+    var sub = !overlay.hidden;
+    if(sub) openSubSheet(html); else { openSheet(html); overlay.classList.add('ov-top'); }
+    var close = function(){ if(sub) closeSubSheet(); else closeSheet(); };
+    document.getElementById('netNo').addEventListener('click', function(){ close(); if(onNo) onNo(); });
+    document.getElementById('netYes').addEventListener('click', function(){
+      try{ window.AndroidBridge.setNetAllowed(true); }catch(e){}
+      close(); privRefresh(); if(onAllowed) setTimeout(onAllowed, sub ? 60 : 220);
+    });
+  }
+  var NO_NET_MSG = 'Нет доступа в интернет. Разрешите его в «Параметры» → «Основные» → «Конфиденциальность»: нужно точное время с сервера.';
+
+  /* ---------- §4.3: пароль резервных копий ---------- */
+  var BK_WARN = 'Если вы забудете этот пароль, открыть уже сделанные копии будет невозможно — ни в приложении, ни на компьютере. Восстановить его нельзя.';
+  function bkPwSetSheet(title, sub, onDone, apply){
+    pwSheetStart('<h2>' + title + '</h2><div class="sheet-sub">' + sub + '</div>' +
+      '<div class="field"><label for="bkA">Пароль</label><input type="password" id="bkA" autocomplete="new-password" enterkeyhint="next"></div>' +
+      '<div class="field"><label for="bkB">Ещё раз</label><input type="password" id="bkB" autocomplete="new-password" enterkeyhint="done"></div>' +
+      '<div class="bk-warn">' + BK_WARN + '</div>' +
+      '<label class="bk-ok"><input type="checkbox" id="bkUnd"><span>Понимаю</span></label>' +
+      '<div class="pw-err" id="pwErr" hidden></div>' +
+      '<div class="sheet-actions"><button type="button" class="btn btn-secondary" id="pwNo">Отмена</button><button type="button" class="btn btn-primary" id="pwYes" disabled>Задать пароль</button></div>', true);
+    var a = document.getElementById('bkA'), b = document.getElementById('bkB'), und = document.getElementById('bkUnd'), yes = document.getElementById('pwYes');
+    und.addEventListener('change', function(){ yes.disabled = !und.checked; });
+    function save(){
+      if(!und.checked) return;
+      if(a.value.length < 8){ pwErr('Пароль — не короче 8 знаков'); return; }
+      if(a.value !== b.value){ pwErr('Пароли не совпадают'); return; }
+      var ok = false; try{ ok = !!apply(a.value); }catch(e){ ok = false; }
+      if(!ok){ pwErr('Не удалось сохранить пароль'); return; }
+      closeSheet(); bkRefresh(); if(onDone) setTimeout(onDone, 220);
+    }
+    document.getElementById('pwNo').addEventListener('click', closeSheet);
+    yes.addEventListener('click', save);
+    a.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); b.focus(); } });
+    b.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); b.blur(); } });
+    try{ a.focus({ preventScroll: true }); }catch(_){ a.focus(); }
+  }
+  /* задан ли пароль; нет — сначала окно «Пароль резервных копий», потом next() */
+  function bkNeedPw(next){
+    if(bkHasPw()){ next(); return; }
+    bkPwSetSheet('Пароль резервных копий', 'Им шифруются все резервные копии — автоматические и «Экспорт». Задаётся один раз, дальше не спрашивается: он нужен только при восстановлении из копии. Отдельный от пароля ящика «Удалённые записи». Не короче 8 знаков.',
+      next, function(pw){ return window.AndroidBridge.backupSetPassword(pw); });
+  }
+  function bkChangeSheet(){
+    pwSheetStart('<h2>Сменить пароль</h2><div class="sheet-sub">Пароль резервных копий. Уже сделанные копии по-прежнему открываются старым паролем, следующие — новым.</div>' +
+      '<div class="field"><label for="bkO">Прежний пароль</label><input type="password" id="bkO" autocomplete="current-password"></div>' +
+      '<div class="field"><label for="bkA">Новый пароль</label><input type="password" id="bkA" autocomplete="new-password"></div>' +
+      '<div class="field"><label for="bkB">Ещё раз</label><input type="password" id="bkB" autocomplete="new-password"></div>' +
+      '<div class="bk-warn">' + BK_WARN + '</div>' +
+      '<div class="pw-err" id="pwErr" hidden></div>' +
+      '<div class="sheet-actions"><button type="button" class="btn btn-secondary" id="pwNo">Отмена</button><button type="button" class="btn btn-primary" id="pwYes">Сменить</button></div>', true);
+    var o = document.getElementById('bkO'), a = document.getElementById('bkA'), b = document.getElementById('bkB');
+    document.getElementById('pwNo').addEventListener('click', closeSheet);
+    document.getElementById('pwYes').addEventListener('click', function(){
+      var A = window.AndroidBridge;
+      if(!A.backupCheckPassword(o.value)){ pwErr('Неверный прежний пароль'); o.select(); return; }
+      if(a.value.length < 8){ pwErr('Новый пароль — не короче 8 знаков'); return; }
+      if(a.value !== b.value){ pwErr('Пароли не совпадают'); return; }
+      if(!A.backupChangePassword(o.value, a.value)){ pwErr('Не удалось сохранить пароль'); return; }
+      if(AB().reset) setAB('reset', null);                           // пароль известен — ожидание больше не нужно
+      closeSheet(); bkRefresh(); bkBannerSync();
+    });
+    try{ o.focus({ preventScroll: true }); }catch(_){ o.focus(); }
+  }
+  /* ---------- §4.4: «Забыли пароль?» — 7 суток ожидания по времени сервера ---------- */
+  function bkForgotSheet(){
+    var R = AB().reset;
+    if(R){ bkResetInfo(); return; }
+    openSheet('<h2>Забыли пароль?</h2><div class="sheet-sub">Уже сделанные копии — автоматические и ручные — этим паролем не открыть никогда. Через 7 суток можно будет задать новый пароль для следующих копий.</div>' +
+      '<p class="unote" style="margin:0 2px 14px">Всё это время на главном экране будет видна плашка с кнопкой «Отменить»: если смену начали не вы, её сразу заметно. Копии пока шифруются прежним паролем.</p>' +
+      '<div class="pw-err" id="pwErr" hidden></div>' +
+      '<div class="sheet-actions"><button type="button" class="btn btn-secondary" id="fgNo">Отмена</button><button type="button" class="btn btn-primary" id="fgYes">Начать ожидание</button></div>');
+    overlay.classList.add('ov-top');
+    document.getElementById('fgNo').addEventListener('click', closeSheet);
+    var yes = document.getElementById('fgYes');
+    var mark = function(){ if(!netOn()){ pwErr(NO_NET_MSG); yes.textContent = 'Разрешить доступ'; } else { pwErr(''); yes.textContent = 'Начать ожидание'; } };
+    mark();
+    yes.addEventListener('click', function(){
+      if(!netOn()){ askNet(mark); return; }
+      yes.disabled = true; yes.textContent = 'Проверяем время…';
+      serverNow().then(function(now){
+        if(overlay.hidden) return;
+        if(now === null){ yes.disabled = false; yes.textContent = 'Начать ожидание'; pwErr('Нет связи с сервером времени — повторите позже'); return; }
+        setAB('reset', { startedAt: now, endsAt: now + BK_WAIT });
+        closeSheet(); bkRefresh(); bkBannerSync();
+      });
+    });
+  }
+  function bkLeft(R){
+    var ms = Math.max(0, R.endsAt - Date.now()), d = Math.floor(ms / BK_DAY), h = Math.floor((ms % BK_DAY) / 3600000), m = Math.ceil((ms % 3600000) / 60000);
+    return d ? d + ' дн ' + h + ' ч' : h ? h + ' ч ' + Math.min(59, m) + ' мин' : Math.max(1, m) + ' мин';
+  }
+  /* нажатие на плашку: пока ждём — когда кончится; срок вышел — проверка по серверу и окно нового пароля */
+  function bkResetInfo(){
+    var R = AB().reset; if(!R) return;
+    if(Date.now() < R.endsAt){
+      openSheet('<h2>Идёт смена пароля</h2><div class="sheet-sub">Пароль резервных копий можно будет задать заново ' + fmtWhen(R.endsAt) + ' (осталось ' + bkLeft(R) + '). До тех пор копии шифруются прежним паролем.</div>' +
+        '<div class="sheet-actions"><button type="button" class="btn btn-secondary" id="rsStop">Отменить смену</button><button type="button" class="btn btn-primary" id="rsOk">Понятно</button></div>');
+      overlay.classList.add('ov-top');
+      document.getElementById('rsOk').addEventListener('click', closeSheet);
+      document.getElementById('rsStop').addEventListener('click', function(){ setAB('reset', null); closeSheet(); bkRefresh(); bkBannerSync(); });
+      return;
+    }
+    var go = function(){
+      serverNow().then(function(now){
+        if(now === null){ openSheet('<h2>Нет связи с сервером времени</h2><div class="sheet-sub">Окончание ожидания проверяется по точному времени. Повторите позже.</div><div class="sheet-actions"><button type="button" class="btn btn-primary" id="rsOk">Понятно</button></div>'); document.getElementById('rsOk').addEventListener('click', closeSheet); return; }
+        if(now < R.endsAt){ bkResetInfo(); return; }
+        bkPwSetSheet('Новый пароль резервных копий', 'Ожидание закончилось. Следующие копии будут зашифрованы новым паролем; старые по-прежнему открываются только старым.',
+          function(){ bkBannerSync(); }, function(pw){ var ok = window.AndroidBridge.backupResetPassword(pw); if(ok) setAB('reset', null); return ok; });
+      });
+    };
+    if(!netOn()){
+      openSheet('<h2>Можно задать новый пароль</h2><div class="sheet-sub">Проверить окончание можно, когда разрешён доступ в интернет. ' + NO_NET_MSG + '</div>' +
+        '<div class="sheet-actions"><button type="button" class="btn btn-secondary" id="rsNo">Отмена</button><button type="button" class="btn btn-primary" id="rsNet">Разрешить доступ</button></div>');
+      document.getElementById('rsNo').addEventListener('click', closeSheet);
+      document.getElementById('rsNet').addEventListener('click', function(){ closeSheet(); setTimeout(function(){ askNet(go); }, 220); });
+      return;
+    }
+    go();
+  }
+  /* плашка под верхней панелью — во всех разделах и сферах; убрать её можно только отменой или новым паролем */
+  function bkBannerSync(){
+    var tb = document.querySelector('#app > .topbar'); if(!tb) return;
+    var el = document.getElementById('bkBanner'), R = BK ? AB().reset : null;
+    if(!R){ if(el) el.remove(); return; }
+    if(!el){
+      el = document.createElement('div'); el.id = 'bkBanner'; el.className = 'bk-banner'; el.setAttribute('role', 'status');
+      el.innerHTML = '<button type="button" class="bkb-t"></button><button type="button" class="bkb-x">Отменить</button>';
+      tb.appendChild(el);
+      el.querySelector('.bkb-t').addEventListener('click', function(){ if(!uiBlocked()) bkResetInfo(); });
+      el.querySelector('.bkb-x').addEventListener('click', function(){
+        if(uiBlocked()) return;
+        askDraft('Отменить смену пароля?', 'Пароль резервных копий останется прежним.', 'Отменить смену', function(){ setAB('reset', null); bkRefresh(); bkBannerSync(); }, function(){});
+      });
+    }
+    var done = Date.now() >= R.endsAt;
+    el.classList.toggle('ready', done);
+    el.querySelector('.bkb-t').textContent = done ? 'Можно задать новый пароль резервных копий' : 'Идёт смена пароля резервных копий · осталось ' + bkLeft(R);
+    el.querySelector('.bkb-x').hidden = done;
+  }
+  if(BK) setInterval(bkBannerSync, 60000);
+
+  /* ---------- §4.3: запись копий — обёртка, ответ: window.onAndroidBackupResult(token, ok, size, err) ---------- */
+  var bkWaits = {}, bkRunning = false;
+  window.onAndroidBackupResult = function(token, ok, size, err){
+    var f = bkWaits[token]; if(!f) { bkRefresh(); return; }
+    delete bkWaits[token]; f({ ok: !!ok, size: +size || 0, err: String(err || '') });
+  };
+  function bkMedia(){ return JSON.stringify((projects && projects.mediaList ? projects.mediaList() : []).map(function(m){ return { e: m.e, f: m.f }; })); }
+  function bkCall(fn){
+    return new Promise(function(res){
+      var tok = 'b' + Date.now() + Math.random().toString(36).slice(2, 6);
+      bkWaits[tok] = res;
+      var started = false; try{ started = fn(tok) !== false; }catch(e){ started = false; }
+      if(!started){ delete bkWaits[tok]; res({ ok: false, size: 0, err: 'error' }); }
+    });
+  }
+  function bkErrText(err){
+    return err === 'space' ? 'мало места' : err === 'perm' ? 'нет доступа к папке «Загрузки»' : err === 'nopw' ? 'не задан пароль' : err === 'cancel' ? 'отменено' : 'ошибка записи';
+  }
+  /* ручной «Экспорт»: окно выбора места (обёртка), архив с паролем */
+  function bkExport(btn){
+    bkNeedPw(function(){
+      openSheet('<h2>Экспорт</h2><div class="sheet-sub">Копия будет зашифрована паролем резервных копий. Дальше выберите, куда её сохранить.</div>' +
+        '<p class="unote" style="margin:0 2px 14px">Открыть копию на компьютере можно в 7-Zip (а также WinRAR, The Unarchiver); встроенный архиватор Windows такие архивы не открывает.</p>' +
+        '<div class="sheet-actions"><button type="button" class="btn btn-secondary" id="exNo">Отмена</button><button type="button" class="btn btn-primary" id="exYes">Сохранить</button></div>');
+      overlay.classList.add('ov-top');
+      document.getElementById('exNo').addEventListener('click', closeSheet);
+      document.getElementById('exYes').addEventListener('click', function(){
+        closeSheet();
+        var json = backupJson();
+        bkCall(function(tok){ return window.AndroidBridge.exportEncrypted(json, bkMedia(), tok); }).then(function(r){
+          if(r.ok){ if(btn) flashBtn(btn); try{ window.AndroidBridge.toast('Копия сохранена · ' + fmtMB(r.size)); }catch(e){} }
+          else if(r.err !== 'cancel'){ try{ window.AndroidBridge.toast('Не удалось сохранить копию: ' + bkErrText(r.err)); }catch(e){} }
+        });
+      });
+    });
+  }
+  /* автокопия: при запуске и при уходе на второй план, если со времени последней прошёл срок */
+  function bkState(){ try{ return JSON.parse(window.AndroidBridge.autoBackupState() || '{}') || {}; }catch(e){ return {}; } }
+  function bkDue(){
+    var A = AB(); if(A.mode === 'off' || !bkHasPw()) return false;
+    var st = bkState(), per = A.mode === 'week' ? 7 * BK_DAY : 30 * BK_DAY;
+    return !st.running && (!st.lastAt || Date.now() - st.lastAt >= per);
+  }
+  function bkRun(interactive){
+    if(bkRunning) return Promise.resolve({ ok: false, err: 'busy' });
+    bkRunning = true; bkRefresh();
+    var json = backupJson(), keep = AB().keep;
+    return bkCall(function(tok){ return window.AndroidBridge.autoBackupRun(json, bkMedia(), keep, !!interactive, tok); }).then(function(r){
+      bkRunning = false; bkRefresh(); return r;
+    });
+  }
+  function bkAutoMaybe(){ if(BK && dataSeen.tasks && bkDue()) bkRun(false); }
+  if(BK){
+    setTimeout(bkAutoMaybe, 4000);
+    document.addEventListener('visibilitychange', function(){ if(document.hidden) bkAutoMaybe(); });
+  }
+
+  /* ---------- блок «Автокопия» в «Резервном копировании» ---------- */
+  function bkAgo(t){
+    var d = Math.floor((Date.now() - t) / BK_DAY);
+    return d <= 0 ? 'сегодня' : d === 1 ? 'вчера' : d + ' ' + plural3(d, ['день', 'дня', 'дней']) + ' назад';
+  }
+  function abBlockHtml(){
+    var A = AB(), st = bkState(), pw = bkHasPw();
+    var line = (bkRunning || st.running) ? 'Делается копия…'
+      : st.err ? 'Не удалось сделать копию: ' + bkErrText(st.err)
+      : st.lastAt ? 'Последняя копия: ' + bkAgo(st.lastAt) + (st.size ? ' · ' + fmtMB(st.size) : '') : 'Копий ещё не было';
+    return '<div class="bk-sub">Автокопия</div><div class="uirows" role="radiogroup" aria-label="Автокопия">' +
+      [['off', 'Выкл'], ['week', 'Раз в неделю'], ['month', 'Раз в месяц']].map(function(o){
+        var on = A.mode === o[0];
+        return '<button type="button" role="radio" aria-checked="' + on + '" class="uirow uopt' + (on ? ' on' : '') + '" data-ab="' + o[0] + '"><span class="lbl">' + o[1] + '</span>' + UI_CHECK + '</button>';
+      }).join('') + '</div>' +
+      '<div class="uirows" style="margin-top:12px"><div class="uirow ntf-dayrow"><span class="lbl">Хранить копий<small>сверх этого самые старые удаляются</small></span>' +
+        '<div class="ntf-days" role="radiogroup" aria-label="Хранить копий">' + [3, 5, 10].map(function(n){
+          var on = A.keep === n; return '<button type="button" class="ntf-day' + (on ? ' on' : '') + '" aria-pressed="' + on + '" data-keep="' + n + '">' + n + '</button>';
+        }).join('') + '</div></div>' +
+        '<div class="uirow"><span class="lbl">' + line + '<small>' + (A.mode === 'off' ? 'автокопия выключена' : 'при запуске и при уходе приложения на второй план, если подошёл срок') + '</small></span></div>' +
+        '<button type="button" class="uirow uopt" id="abNow"' + (bkRunning || st.running ? ' disabled' : '') + '><span class="lbl">Сделать копию сейчас<small>в «Загрузки/Планировщик/Копии»</small></span></button>' +
+        (pw ? '<button type="button" class="uirow uopt" id="abPw"><span class="lbl">Сменить пароль<small>пароль резервных копий</small></span></button>' +
+              '<button type="button" class="uirow uopt" id="abForgot"><span class="lbl">Забыли пароль?<small>' + (A.reset ? 'идёт ожидание' : 'новый пароль — через 7 суток ожидания') + '</small></span></button>'
+            : '<button type="button" class="uirow uopt" id="abSet"><span class="lbl">Задать пароль<small>пароль резервных копий ещё не задан</small></span></button>') +
+      '</div>' +
+      '<p class="unote">Все копии — автоматические и «Экспорт» — шифруются паролем резервных копий. Пароль хранится зашифрованным на этом телефоне и нужен только при восстановлении. Открыть копию на компьютере можно в 7-Zip; встроенный архиватор Windows такие архивы не открывает. Копии лежат в «Загрузки/Планировщик/Копии».</p>';
+  }
+  function bkRefresh(){ var b = document.getElementById('abBlock'); if(b && b.isConnected){ b.innerHTML = abBlockHtml(); wireAbBlock(b); } }
+  function wireAbBlock(box){
+    if(!box) return;
+    box.querySelectorAll('[data-ab]').forEach(function(b){
+      b.addEventListener('click', function(){
+        var m = b.getAttribute('data-ab'); if(AB().mode === m) return;
+        if(m === 'off'){ setAB('mode', 'off'); bkRefresh(); return; }
+        bkNeedPw(function(){ setAB('mode', m); bkRefresh(); bkAutoMaybe(); });
+      });
+    });
+    box.querySelectorAll('[data-keep]').forEach(function(b){
+      b.addEventListener('click', function(){ setAB('keep', +b.getAttribute('data-keep')); bkRefresh(); });
+    });
+    var now = box.querySelector('#abNow');
+    if(now) now.addEventListener('click', function(){
+      bkNeedPw(function(){
+        bkRun(true).then(function(r){
+          try{ window.AndroidBridge.toast(r.ok ? 'Копия сохранена в «Загрузки/Планировщик/Копии» · ' + fmtMB(r.size) : 'Не удалось сделать копию: ' + bkErrText(r.err)); }catch(e){}
+        });
+      });
+    });
+    var pw = box.querySelector('#abPw'); if(pw) pw.addEventListener('click', bkChangeSheet);
+    var fg = box.querySelector('#abForgot'); if(fg) fg.addEventListener('click', bkForgotSheet);
+    var st = box.querySelector('#abSet'); if(st) st.addEventListener('click', function(){ bkNeedPw(function(){}); });
+  }
+
+  /* ---------- §4.3: «Импорт» зашифрованной копии: пароль → обёртка расшифровывает → обычный импорт ---------- */
+  function zipEncrypted(u8){
+    // первый локальный заголовок: бит 0 флагов — зашифровано; метод 99 — WinZip AES
+    if(u8.length < 30 || u8[0] !== 0x50 || u8[1] !== 0x4b || u8[2] !== 3 || u8[3] !== 4) return false;
+    return !!(u8[6] & 1) || (u8[8] | (u8[9] << 8)) === 99;
+  }
+  var impWaits = {};
+  window.onAndroidImportResult = function(token, status, url){ var f = impWaits[token]; if(f){ delete impWaits[token]; f({ status: String(status || 'error'), url: String(url || '') }); } };
+  function importEncrypted(btn){
+    if(!BK){
+      openSubSheet('<h2>Копия зашифрована</h2><div class="sheet-sub">Эта копия сделана в приложении «Планировщик» для Android и защищена паролем резервных копий. Восстановить её можно в приложении; на компьютере её открывает 7-Zip.</div>' +
+        '<div class="sheet-actions"><button type="button" class="btn btn-primary" id="isOk">Понятно</button></div>');
+      document.getElementById('isOk').addEventListener('click', closeSubSheet);
+      return;
+    }
+    pwSheetStart('<h2>Пароль копии</h2><div class="sheet-sub">Копия зашифрована. Введите пароль резервных копий, которым она была сделана.</div>' +
+      '<div class="field"><input type="password" id="pwIn" autocomplete="current-password" enterkeyhint="done" placeholder="Пароль" aria-label="Пароль"></div>' +
+      '<div class="pw-err" id="pwErr" hidden></div>' +
+      '<div class="sheet-actions"><button type="button" class="btn btn-secondary" id="pwNo">Отмена</button><button type="button" class="btn btn-primary" id="pwYes">Открыть</button></div>', true);
+    var inp = document.getElementById('pwIn'), yes = document.getElementById('pwYes'), busy = false;
+    function go(){
+      if(busy || !inp.value) return;
+      busy = true; yes.disabled = true; yes.textContent = 'Открываю…';
+      new Promise(function(res){
+        var tok = 'i' + Date.now(); impWaits[tok] = res;
+        var started = false; try{ started = window.AndroidBridge.importDecrypt(inp.value, tok) !== false; }catch(e){}
+        if(!started){ delete impWaits[tok]; res({ status: 'error' }); }
+      }).then(function(r){
+        busy = false; yes.disabled = false; yes.textContent = 'Открыть';
+        if(r.status === 'badpw'){ pwErr('Неверный пароль'); inp.select(); return; }
+        if(r.status !== 'ok' || !r.url){ pwErr('Не удалось открыть копию'); return; }
+        fetch(r.url, { cache: 'no-store' }).then(function(x){ return x.blob(); }).then(function(blob){
+          closeSheet();
+          importBackupFile(blob, btn, function(){ try{ window.AndroidBridge.importDone(); }catch(e){} });
+        }).catch(function(){ pwErr('Не удалось открыть копию'); });
+      });
+    }
+    document.getElementById('pwNo').addEventListener('click', closeSheet);
+    yes.addEventListener('click', go);
+    inp.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); go(); } });
+    try{ inp.focus({ preventScroll: true }); }catch(_){ inp.focus(); }
+  }
+
+  /* ================= v54: защита приложения и устойчивость (только в приложении Android) =================
+     §5.1 «Вход по отпечатку или коду»: экран входа, системное окно и свой PIN-код — в обёртке; здесь только параметры.
+     §5.2 если встроенный браузер падает трижды за минуту, страница уже не может сделать копию сама — поэтому она заранее
+     держит у обёртки свежую копию данных (как «Экспорт», плюс черновики форм), а при запуске говорит, какие папки вложений
+     ещё нужны (лишние обёртка удаляет). */
+  var LOCK_UI = !!(window.AndroidBridge && typeof window.AndroidBridge.lockState === 'function');
+  var LOCK_DELAYS = [[0, 'Сразу при выходе'], [60000, 'Через 1 минуту'], [300000, 'Через 5 минут']];
+  function lockSt(){ try{ return JSON.parse(window.AndroidBridge.lockState() || '{}') || {}; }catch(e){ return {}; } }
+  var lockWaits = {};
+  window.onAndroidLockResult = function(token, ok){ var f = lockWaits[token]; if(f){ delete lockWaits[token]; f(!!ok); } privRefresh(); };
+  function lockCall(fn){
+    return new Promise(function(res){
+      var tok = 'l' + Date.now() + Math.random().toString(36).slice(2, 6); lockWaits[tok] = res;
+      var started = false; try{ started = fn(tok) !== false; }catch(e){}
+      if(!started){ delete lockWaits[tok]; res(false); }
+    });
+  }
+  function lockBlockHtml(){
+    if(!LOCK_UI) return '';
+    var L = lockSt(), on = !!L.enabled;
+    // v54.1 §7: только системная блокировка — отпечаток, лицо или код блокировки телефона
+    var how = on ? 'отпечаток, лицо или код блокировки телефона' : (L.canSystem ? 'выключен' : '<span class="ntf-warn">Сначала задайте блокировку экрана в настройках телефона</span>');
+    var h = '<div class="uirows" style="margin-top:12px">' +
+      '<label class="uirow"><span class="lbl">Вход по отпечатку или коду<small>' + how + '</small></span>' + uiSwitch('lockOn', on) + '</label></div>';
+    if(on){
+      h += '<div class="bk-sub">Блокировать</div><div class="uirows" role="radiogroup" aria-label="Блокировать">' + LOCK_DELAYS.map(function(o){
+        var sel = (+L.delay) === o[0];
+        return '<button type="button" role="radio" aria-checked="' + sel + '" class="uirow uopt' + (sel ? ' on' : '') + '" data-ld="' + o[0] + '"><span class="lbl">' + o[1] + '</span>' + UI_CHECK + '</button>';
+      }).join('') + '</div>' +
+      '<div class="uirows" style="margin-top:12px"><label class="uirow"><span class="lbl">Скрывать в списке недавних приложений<small>Снимки экрана в Планировщике тоже будут запрещены</small></span>' + uiSwitch('lockSec', !!L.secure) + '</label></div>';
+    }
+    h += '<p class="unote">Сколько приложение может пробыть свёрнутым без повторного входа; после полного закрытия вход спрашивается всегда. Нажатие на виджет «Быстрая задача» или на уведомление тоже сначала просит вход, текст напоминаний на заблокированном экране скрыт. Защита закрывает вход в приложение, но не шифрует данные на телефоне.</p>';
+    // v54.1 §8: только в тестовой сборке
+    if(window.AndroidBridge && typeof window.AndroidBridge.testCrash === 'function' && typeof window.AndroidBridge.isTestBuild === 'function' && window.AndroidBridge.isTestBuild())
+      h += '<div class="uirows" style="margin-top:12px"><button type="button" class="uirow uopt" id="tstCrash"><span class="lbl">Тест: сбой браузера<small>только в тестовой сборке: роняет встроенный браузер, как при настоящем сбое; три раза за минуту — экран «Не удалось открыть Планировщик»</small></span></button></div>';
+    return h;
+  }
+  function wireLockBlock(box){
+    if(!box || !LOCK_UI) return;
+    var A = window.AndroidBridge, sw = box.querySelector('#lockOn');
+    if(sw) sw.addEventListener('change', function(){
+      var want = sw.checked; sw.checked = !want;                // меняется только после входа
+      var L = lockSt();
+      if(want){
+        if(!L.canSystem){ privRefresh(); return; }               // блокировки экрана нет — включать нечем
+        lockCall(function(t){ return A.lockEnable(t); });
+        return;
+      }
+      lockCall(function(t){ return A.lockDisable('', t); });
+    });
+    box.querySelectorAll('[data-ld]').forEach(function(b){
+      b.addEventListener('click', function(){ try{ A.lockSetDelay(+b.getAttribute('data-ld')); }catch(e){} privRefresh(); });
+    });
+    var sec = box.querySelector('#lockSec');
+    if(sec) sec.addEventListener('change', function(){ try{ A.lockSetSecure(sec.checked); }catch(e){} privRefresh(); });
+    var tc = box.querySelector('#tstCrash');
+    if(tc) tc.addEventListener('click', function(){ try{ A.testCrash(); }catch(e){} });
+  }
+
+  /* ---------- §5.2: свежая копия данных у обёртки — для «Сохранить все данные в Загрузки» после сбоев ---------- */
+  var KEEP = !!(window.AndroidBridge && typeof window.AndroidBridge.keepBackup === 'function');
+  var keepT = 0, keepSent = '';
+  function keepSoon(){ if(!KEEP) return; clearTimeout(keepT); keepT = setTimeout(keepFlush, 5000); }
+  function keepFlush(){
+    clearTimeout(keepT); keepT = 0;
+    if(!KEEP || !dataSeen.tasks) return;
+    try{
+      var js = backupJson(), dr = { task: draftGet(DRAFT_TASK), entry: draftGet(DRAFT_ENTRY) };
+      js = js.replace(/\}\s*$/, ',\n  "drafts": ' + JSON.stringify(dr) + '\n}');
+      var media = bkMedia();
+      if(js + media === keepSent) return;
+      if(window.AndroidBridge.keepBackup(js, media) !== false) keepSent = js + media;
+    }catch(e){ console.error('keepBackup', e); }
+  }
+  if(KEEP){
+    document.addEventListener('visibilitychange', function(){ if(document.hidden) keepFlush(); });
+    window.addEventListener('pagehide', keepFlush);
+  }
+  /* лишние папки вложений (известное ограничение v47): какие записи с вложениями ещё есть — в списках, «Удалённых записях»
+     и черновике формы; остальные папки старше суток обёртка удаляет */
+  if(window.AndroidBridge && typeof window.AndroidBridge.attKeep === 'function') setTimeout(function(){
+    try{
+      if(!projects || !projects.mediaList) return;
+      var ids = {};
+      projects.mediaList().forEach(function(m){ ids[m.e] = 1; });
+      // v54.1 §8: every record that has attachments in its description — in the lists and in «Удалённые записи» — keeps its folder,
+      // even when a file of it is not found
+      (projects.exportData() || []).forEach(function(p){ (p.entries || []).forEach(function(e){ if(e && e.id && ((e.audio && e.audio.length) || (e.images && e.images.length))) ids[e.id] = 1; }); });
+      (projects.exportDeleted() || []).forEach(function(e){ if(e && e.id && ((e.audio && e.audio.length) || (e.images && e.images.length))) ids[e.id] = 1; });
+      var d = draftGet(DRAFT_ENTRY); if(d && d.eid) ids[d.eid] = 1;
+      var keep = Object.keys(ids);
+      if(keep.length) window.AndroidBridge.attKeep(JSON.stringify(keep));
+    }catch(e){}
+  }, 8000);
+
+  if(KEEP) setInterval(keepFlush, 60000);
+
   /* ================= boot ================= */
   initStorage();
   render();
   restoreTaskDraft();                                      // v45 §4
+  // v51 §2: the app was started by a tap on a notification
+  if(window.AndroidBridge && typeof window.AndroidBridge.takeIntent === 'function') setTimeout(function(){
+    try{ var j = window.AndroidBridge.takeIntent(); if(j) openFromAndroid(j); }catch(e){}
+  }, 400);
   /* the first frames are drawn with everything in place: only then is the app shown (see «start-up» in the head);
      the theme's background is remembered for the next start */
   requestAnimationFrame(function(){ requestAnimationFrame(function(){
