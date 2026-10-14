@@ -391,6 +391,22 @@
   .grpsw i{ width:min(22px, calc(100% - 6px)); aspect-ratio:1; transition:box-shadow .15s ease; }
   .grpsw.on i{ box-shadow:inset 0 0 0 1px rgba(0,0,0,.18), 0 0 0 2px var(--surface), 0 0 0 4px var(--text); }
   .grpdrop-in .grpaddbtn{ margin-bottom:6px; }
+  /* v57 §8.4: «Свой цвет» — кружок-радуга (или выбранный свой цвет в радужном ободке) и окно выбора */
+  .cpsw i{ background:conic-gradient(from 90deg, #f44, #fd3, #4d6, #3cd, #46f, #c4f, #f44) !important; position:relative; }
+  .cpsw.on i::after{ content:""; position:absolute; inset:3px; border-radius:50%; background:var(--gc); }
+  #subSheetOverlay.cp-top{ z-index:47; }
+  .cp-sample{ display:flex; align-items:center; justify-content:center; min-height:64px; margin:4px 0 14px; border-radius:12px; background:var(--surface-2); border:1px solid var(--border-soft); }
+  .cp-sample > span{ display:block; width:44px; height:44px; border-radius:50%; box-shadow:inset 0 0 0 1px rgba(0,0,0,.18); }
+  .cp-sv{ --h:210; position:relative; height:170px; border-radius:12px; touch-action:none; cursor:crosshair;
+    background:linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, hsl(var(--h) 100% 50%)); }
+  .cp-hue{ position:relative; height:28px; margin-top:14px; border-radius:14px; touch-action:none; cursor:pointer;
+    background:linear-gradient(90deg, #f00 0%, #ff0 16.7%, #0f0 33.3%, #0ff 50%, #00f 66.7%, #f0f 83.3%, #f00 100%); }
+  .cp-knob{ position:absolute; width:24px; height:24px; margin:-12px 0 0 -12px; border-radius:50%; border:3px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.45); pointer-events:none; box-sizing:border-box; }
+  .cp-hue .cp-knob{ top:50%; }
+  .cp-hex{ margin:10px 2px 4px; font:600 13px var(--font-mono, monospace); color:var(--text-dim); text-align:center; letter-spacing:.06em; }
+  .cp-tab{ display:inline-flex; align-items:center; height:30px; padding:0 18px; border-radius:9px 9px 0 0; font:700 12.5px var(--font-body); letter-spacing:.04em; }
+  .cp-fold{ display:flex; flex-direction:column; align-items:flex-start; width:78%; }
+  .cp-fold b{ display:block; width:100%; height:26px; border-radius:0 9px 9px 9px; background:var(--surface); border:1px solid var(--border-soft); font:600 11px var(--font-body); padding:6px 10px; box-sizing:border-box; }
   .grpdrop-in .grpnote{ margin:0 2px 2px; font-size:12px; line-height:1.4; color:var(--text-faint); }
   /* the task card: a stage's title, its progress strip and «выполнено / всего», its subtasks below */
   .stgcard{ margin:2px 0 12px; }
@@ -671,7 +687,14 @@
   .pa-btn:disabled{ opacity:.45; }
   .pa-rec{ display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:100px; background:var(--surface-2); border:1px solid var(--danger); color:var(--text); font:600 13px var(--font-body); }
   .pa-rec i{ width:10px; height:10px; border-radius:50%; background:var(--danger); animation:parec 1s ease-in-out infinite; flex:none; }
-  .pa-rec b{ font:600 14px var(--font-mono); font-variant-numeric:tabular-nums; flex:1; }
+  .pa-rec b{ font:600 14px var(--font-mono); font-variant-numeric:tabular-nums; flex:none; }
+  /* v56 §7.3: бегущая волна записи — столбики в стиле дорожки голосовой заметки */
+  .rec-wave{ flex:1; min-width:0; height:30px; overflow:hidden; display:flex; justify-content:flex-end; align-items:center;
+    -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 22px); mask-image:linear-gradient(90deg, transparent 0, #000 22px); }
+  .rec-wave > span{ display:flex; align-items:center; gap:2px; height:100%; flex:none; }
+  .rec-wave i{ flex:0 0 auto; width:2.5px; border-radius:2px; background:var(--type-current); animation:none; opacity:1; }
+  .rec-wave.still{ justify-content:center; -webkit-mask-image:none; mask-image:none; }
+  .rec-wave.still i{ width:6px; border-radius:3px; transition:height .1s linear; }
   .pa-rec button{ border:0; border-radius:100px; background:var(--danger); color:#fff; font:600 13px var(--font-body); padding:7px 14px; cursor:pointer; }
   @keyframes parec{ 0%,100%{ opacity:1; } 50%{ opacity:.25; } }
   .pa-note{ font-size:12.5px; color:var(--text-dim); line-height:1.4; }
@@ -689,8 +712,32 @@
   .pa-miss{ border-style:dashed; color:var(--text-faint); font-size:12.5px; padding:9px 14px; gap:8px; }
   .pa-miss svg{ width:18px; height:18px; flex:none; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
   .pa-miss span{ flex:1; }
+  /* v55 §6.1: a sound from another app in a format the app cannot play: its name and the note, no player */
+  .pa-nop{ border-style:solid; }
+  .pa-nop span{ min-width:0; line-height:1.35; }
+  .pa-nop span b{ display:block; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   /* the pictures of a record: each one across the whole width, one under another (no separate viewer) */
   .pi-list{ display:flex; flex-direction:column; gap:8px; }
+  /* v57 §8.7: картинка ещё сжимается — песочные часы в цвете текста темы */
+  .pimg.pimg-wait{ height:104px; display:flex; align-items:center; justify-content:center; color:var(--text); }
+  .hglass{ width:36px; height:46px; overflow:visible; }
+  .hglass .hg-glass{ fill:none; stroke:currentColor; stroke-width:1.6; stroke-linejoin:round; opacity:.75; }
+  .hglass .hg-cap{ stroke:currentColor; stroke-width:2.4; stroke-linecap:round; }
+  .hglass .hg-top, .hglass .hg-bot, .hglass .hg-stream{ fill:currentColor; opacity:.8; }
+  .hglass .hg-turn{ transform-origin:16px 20px; transform-box:view-box; animation:hgTurn 1.2s cubic-bezier(.6,0,.3,1) infinite; }
+  .hglass .hg-top{ transform-origin:16px 20px; transform-box:view-box; animation:hgTop 1.2s linear infinite; }
+  .hglass .hg-bot{ transform-origin:16px 35px; transform-box:view-box; animation:hgBot 1.2s linear infinite; }
+  .hglass .hg-stream{ animation:hgStream 1.2s linear infinite; }
+  @keyframes hgTurn{ 0%,78%{ transform:rotate(0deg); } 100%{ transform:rotate(180deg); } }
+  @keyframes hgTop{ 0%{ transform:scaleY(1); } 75%,100%{ transform:scaleY(0); } }
+  @keyframes hgBot{ 0%{ transform:scaleY(0); } 75%,100%{ transform:scaleY(1); } }
+  @keyframes hgStream{ 0%,72%{ opacity:.8; } 76%,100%{ opacity:0; } }
+  @keyframes hgPulse{ 0%,100%{ opacity:1; } 50%{ opacity:.4; } }
+  @media (prefers-reduced-motion:reduce){
+    .hglass .hg-turn, .hglass .hg-top, .hglass .hg-bot, .hglass .hg-stream{ animation:none; }
+    .hglass .hg-top{ transform:scaleY(.5); } .hglass .hg-bot{ transform:scaleY(.5); }
+    .hglass{ animation:hgPulse 1.6s ease-in-out infinite; }
+  }
   .pimg{ position:relative; width:100%; border-radius:10px; overflow:hidden; background:var(--surface-3); border:1px solid var(--border-soft); }
   .pimg img{ display:block; width:100%; height:100%; object-fit:contain; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; pointer-events:none; }
   .pimg .pi-rm{ position:absolute; top:6px; right:6px; width:32px; height:32px; border-radius:50%; border:0; background:rgba(0,0,0,.55); color:#fff; font-size:14px; line-height:1; cursor:pointer; padding:0; }
@@ -711,8 +758,11 @@
   .pw-wait{ font-size:12.5px; color:var(--text-dim); line-height:1.4; }
   .dlist{ display:flex; flex-direction:column; gap:8px; margin:0 0 10px; }
   .dcard{ background:var(--surface); border:1px solid var(--border-soft); border-radius:var(--radius-m); padding:11px 13px; }
-  .dcard .dt{ font-weight:600; font-size:14px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .dcard .dx{ font-size:13px; color:var(--text-dim); margin-top:3px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; white-space:pre-wrap; }
+  /* v56 §7.4: удалённая запись — целиком, как в списке: заголовок, весь текст, картинки во всю ширину, голосовые с воспроизведением */
+  .dcard .dt{ font-weight:600; font-size:15px; line-height:1.35; color:var(--text); overflow-wrap:anywhere; }
+  .dcard .dx{ font-size:14px; line-height:1.45; color:var(--text-dim); margin-top:4px; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .dcard .dx:first-child{ margin-top:0; }
+  .dcard .pc-att{ margin-top:8px; }
   .dcard .dm{ font-size:11.5px; color:var(--text-faint); margin-top:6px; }
   .dcard .dact{ display:flex; gap:8px; margin-top:9px; }
   .dcard .dact .btn{ padding:9px 10px; font-size:13px; }
@@ -856,6 +906,13 @@
   .uimore{ display:grid; grid-template-rows:0fr; transition:grid-template-rows .32s cubic-bezier(.22,.68,.16,1); }
   .uimore.open{ grid-template-rows:1fr; }
   .uimore>div{ overflow:hidden; min-height:0; }
+  .ucat-dot{ flex:none; width:16px; height:16px; border-radius:50%; margin-right:12px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.18); }
+  .ucat-name{ display:flex; align-items:center; gap:10px; padding:10px 14px 4px; border-top:1px solid var(--border-soft); }
+  .ucat-name span{ flex:none; font:600 13px var(--font-body); color:var(--text-dim); }
+  .ucat-name input{ flex:1; min-width:0; background:var(--surface); border:1px solid var(--border); color:var(--text); border-radius:var(--radius-s,8px); padding:8px 10px; font:500 15px var(--font-body); outline:none; }
+  .ucat-name input:focus{ border-color:var(--type-current); }
+  .ucat-name + .ucat-sw{ border-top:0; }
+  .ucat-sw{ display:grid; grid-template-columns:repeat(11, minmax(0,1fr)); padding:6px 4px 8px; border-top:1px solid var(--border-soft); }
   .uimore>div>.uirow:first-child{ border-top:1px solid var(--border-soft); }
   .uimorebtn{ width:100%; border:0; border-top:1px solid var(--border-soft); background:transparent; text-align:left;
     font-family:var(--font-body); color:var(--text-dim); cursor:pointer; min-height:44px; }
@@ -970,6 +1027,10 @@
   .sheet .pwin-selbar #projSelSave, .sheet .pwin-selbar #projSelGo{ order:1; flex:1 1 40%; }
   .sheet .pwin-selbar #projSelCancel{ order:2; flex:1 1 40%; }
   .sheet .pwin-selbar #projSelAll{ order:2; flex:1 1 40%; }
+  /* v55 §6.2: «Перенести · N» opens the second row, before «Отмена» and «Все» (a zero-high item breaks the rows) */
+  .pwin-selbar::after{ content:""; order:1; flex:0 0 100%; height:0; margin-bottom:-8px; }
+  .sheet .pwin-selbar #projSelMove{ order:2; flex:1.6 1 0; white-space:nowrap; }
+  .sheet .pwin-selbar #projSelCancel, .sheet .pwin-selbar #projSelAll{ order:3; flex:1 1 0; white-space:nowrap; }
   .sheet .pwin-selbar .btn:disabled{ opacity:.45; }
   .sheet .pwin-list.selecting .pcopy, .sheet .pwin-list.selecting .pshare, .sheet .pwin-list.selecting .psave, .sheet .pwin-list.selecting .pact, .sheet .pwin-list.selecting #projAdd{ display:none; }
   .pwin-list.selecting .pcard{ padding-left:46px; padding-right:14px; cursor:pointer; }
@@ -980,14 +1041,14 @@
     background:var(--type-current) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4L18 8' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat; }
   /* a record that was shared: a share mark and «отправлено» at the bottom left, until it is edited and saved again */
   /* v50: the marks «отправлено» and «сохранено на устройство» — in one line at the bottom left, divided by a dot */
-  .prow.pshr .pcard, .prow.psav .pcard{ padding-bottom:26px; }
+  .prow.pshr .pcard, .prow.psav .pcard, .prow.prst .pcard{ padding-bottom:26px; }
   .pcard .pmarks{ display:none; position:absolute; left:14px; right:14px; bottom:6px; align-items:center; gap:6px; font:600 10.5px var(--font-body);
     letter-spacing:.04em; color:var(--type-current); white-space:nowrap; overflow:hidden; }
-  .prow.pshr .pcard .pmarks, .prow.psav .pcard .pmarks{ display:flex; }
-  .pcard .pshr-b, .pcard .psav-b{ display:none; align-items:center; gap:4px; min-width:0; }
-  .prow.pshr .pcard .pshr-b, .prow.psav .pcard .psav-b{ display:inline-flex; }
-  .prow.pshr.psav .pcard .psav-b::before{ content:"·"; margin-right:2px; }
-  .pcard .pshr-b svg, .pcard .psav-b svg{ width:13px; height:13px; flex:none; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+  .prow.pshr .pcard .pmarks, .prow.psav .pcard .pmarks, .prow.prst .pcard .pmarks{ display:flex; }
+  .pcard .pshr-b, .pcard .psav-b, .pcard .prst-b{ display:none; align-items:center; gap:4px; min-width:0; }
+  .prow.pshr .pcard .pshr-b, .prow.psav .pcard .psav-b, .prow.prst .pcard .prst-b{ display:inline-flex; }
+  .prow.pshr.psav .pcard .psav-b::before, .prow.prst.pshr .pcard .pshr-b::before, .prow.prst.psav:not(.pshr) .pcard .psav-b::before{ content:"·"; margin-right:2px; }
+  .pcard .pshr-b svg, .pcard .psav-b svg, .pcard .prst-b svg{ width:13px; height:13px; flex:none; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
   .pwin-list.selecting .prow .pcard .pmarks{ left:46px; }
   /* the copy button in the record's upper right corner */
   .sheet .pcard .pcopy{ position:absolute; top:6px; right:6px; width:34px; height:34px; border:0; border-radius:10px; padding:0; margin:0;
@@ -1020,6 +1081,31 @@
   .pfield input::placeholder, .pfield textarea::placeholder{ color:var(--text-faint); font-weight:inherit; }
   .pfield .pf-act{ display:flex; gap:8px; margin-top:10px; }
   .sheet .pfield .pf-act .btn{ padding:10px 14px; font-size:13.5px; }
+  /* v55 §6.2: while a record is held — the ribbon «Перенести в список» at the top of the window. Its own background: the
+     material of the chosen button of the category switch (--pm-* are taken from the top bar), a light shade under it */
+  .pmove{ position:absolute; left:0; right:0; z-index:8; padding:10px 0 11px; pointer-events:none;
+    background:var(--pm-bg, var(--surface-2)); border-bottom:1px solid var(--pm-border, var(--border-soft));
+    box-shadow:var(--pm-shadow, 0 6px 16px rgba(0,0,0,.3)); opacity:0; transform:translateY(-16px);
+    transition:transform .28s cubic-bezier(.3,.8,.25,1), opacity .2s ease; }
+  .pmove.in{ opacity:1; transform:none; }
+  .pmove::after{ content:""; position:absolute; left:0; right:0; top:100%; height:34px; pointer-events:none;
+    background:linear-gradient(rgba(0,0,0,.2), rgba(0,0,0,0)); }
+  .pm-t{ padding:0 18px 8px; font:700 11px var(--font-body); letter-spacing:.09em; text-transform:uppercase; color:var(--text-dim); }
+  .pm-strip{ display:flex; gap:8px; overflow-x:auto; padding:6px 18px 8px; margin:-3px 0 -3px; scrollbar-width:none; }
+  .pm-strip::-webkit-scrollbar{ display:none; }
+  .pm-pill{ flex:none; max-width:72%; padding:9px 16px; border-radius:100px; border:1px solid var(--border); background:var(--surface); color:var(--text);
+    font:600 14px var(--font-body); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; box-shadow:0 1px 3px rgba(0,0,0,.15);
+    transition:transform .16s ease, border-color .16s ease, box-shadow .16s ease; }
+  .pm-pill.on{ border-color:var(--type-current); box-shadow:0 0 0 2px var(--type-current), 0 4px 12px rgba(0,0,0,.25); transform:scale(1.08); }
+  /* «Перенесено в «…»» with «Вернуть» — above «ВЕРНУТЬСЯ» for 5 s */
+  .pundo{ position:absolute; left:16px; right:16px; z-index:9; display:flex; align-items:center; gap:12px; padding:10px 10px 10px 16px;
+    border-radius:14px; background:var(--text); color:var(--bg); font:500 13.5px/1.35 var(--font-body); box-shadow:0 8px 24px rgba(0,0,0,.3);
+    opacity:0; transform:translateY(8px); transition:opacity .22s ease, transform .22s ease; }
+  .pundo.in{ opacity:1; transform:none; }
+  .pundo span{ flex:1; min-width:0; overflow:hidden; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+  .sheet .pundo .pundo-b{ flex:none; border:0; border-radius:100px; padding:8px 14px; background:transparent; color:var(--bg);
+    font:700 13.5px var(--font-body); text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+  @media (prefers-reduced-motion:reduce){ .pmove, .pundo, .pm-pill{ transition:none; } }
 
   /* ================= Сферы деятельности (v38): окно сфер и окно «Настроить» =================
      Both windows carry .sheet-overlay / .sheet (like the window of a list), so every theme's colours, fonts and buttons apply. */
@@ -1054,7 +1140,7 @@
   .scfg-body input.scfg-name{ width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text); border-radius:var(--radius-s);
     padding:11px 12px; font:600 16px var(--font-body); }
   .scfg-body input:focus{ outline:2px solid var(--type-current); outline-offset:0; }
-  .scols{ display:grid; grid-template-columns:repeat(10, minmax(0,1fr)); gap:0; }
+  .scols{ display:grid; grid-template-columns:repeat(11, minmax(0,1fr)); gap:0; }
   .sheet .scol{ height:38px; border:0; background:none; padding:0; display:flex; align-items:center; justify-content:center; cursor:pointer; }
   .scol i{ display:block; width:min(26px, calc(100% - 6px)); aspect-ratio:1; border-radius:50%; background:var(--gc); box-shadow:inset 0 0 0 1px rgba(0,0,0,.18); transition:box-shadow .15s ease; }
   .scol.on i{ box-shadow:inset 0 0 0 1px rgba(0,0,0,.18), 0 0 0 2px var(--bg), 0 0 0 4px var(--text); }
@@ -1088,6 +1174,17 @@
     font:600 12.5px var(--font-body); white-space:nowrap; transition:color .2s ease; }
   .sheet .s3 button.on{ color:var(--text); }
   /* v43 §6: «Весь день» in «Часы» — on a plate like the chosen place of «Всегда | Дни недели | Даты» (only shown, not a button) */
+  /* v57 §8.5: шкала суток в «Часах» сферы */
+  .shscale{ margin:2px 0 12px; }
+  .shs-track{ position:relative; height:12px; border-radius:6px; background:var(--surface-2); border:1px solid var(--border-soft); overflow:hidden;
+    background-image:linear-gradient(90deg, transparent calc(25% - .5px), var(--border) calc(25% - .5px), var(--border) calc(25% + .5px), transparent calc(25% + .5px),
+      transparent calc(50% - .5px), var(--border) calc(50% - .5px), var(--border) calc(50% + .5px), transparent calc(50% + .5px),
+      transparent calc(75% - .5px), var(--border) calc(75% - .5px), var(--border) calc(75% + .5px), transparent calc(75% + .5px)); }
+  .shs-track i{ position:absolute; top:0; bottom:0; }
+  .shs-ticks{ position:relative; height:15px; margin-top:3px; font:500 10.5px var(--font-mono, monospace); color:var(--text-faint); }
+  .shs-ticks span{ position:absolute; top:0; transform:translateX(-50%); }
+  .shs-ticks span:nth-child(1){ left:0; transform:none; } .shs-ticks span:nth-child(2){ left:25%; } .shs-ticks span:nth-child(3){ left:50%; }
+  .shs-ticks span:nth-child(4){ left:75%; } .shs-ticks span:nth-child(5){ left:auto; right:0; transform:none; }
   .sallday{ width:50%; height:40px; padding:3px; margin:0 0 10px; border-radius:100px; background:var(--surface-2); border:1px solid var(--border-soft); }
   .sallday span{ display:flex; align-items:center; justify-content:center; height:100%; border-radius:100px; background:var(--text); color:var(--bg);
     box-shadow:0 1px 4px rgba(0,0,0,.2); font:600 12.5px var(--font-body); white-space:nowrap; }
@@ -1132,6 +1229,14 @@
   .sw-card.p0{ z-index:3; }
   .sw-card.p1{ z-index:2; transform:translateY(-12px) scale(.91); }
   .sw-card.p2{ z-index:1; transform:translateY(-24px) scale(.78); }
+  /* v57 §8.1: маленький экран, тумбе не хватает места — переключатель ниже: передняя карточка 48 px, задние края по 8 px */
+  .sphsw.compact{ height:64px; }
+  .sphsw.compact .sw-card{ height:48px; }
+  .sphsw.compact .sw-card.p1{ transform:translateY(-8px) scale(.91); }
+  .sphsw.compact .sw-card.p2{ transform:translateY(-16px) scale(.78); }
+  .sphsw.compact .sw-card.p3{ transform:translateY(-22px) scale(.66); }
+  .sphsw.compact .sb-nm{ font-size:15px; padding-bottom:4px; }
+  .sphsw.compact .sw-in.nr .sb-nm{ font-size:11.5px; padding-bottom:2px; }
   .sw-card.p3{ z-index:0; transform:translateY(-34px) scale(.66); opacity:0; }
   .sw-card.out{ z-index:4; transform:translateY(16px) scale(1.04); opacity:0; }
   .sw-card.p1::after{ opacity:var(--sw-dk1, .07); } .sw-card.p2::after, .sw-card.p3::after{ opacity:var(--sw-dk2, .14); }
@@ -1184,6 +1289,30 @@
   .si-dots i{ width:7px; height:7px; border-radius:50%; background:var(--border); cursor:pointer; transition:background .2s ease, transform .2s ease; }
   .si-dots i.on{ background:var(--text); transform:scale(1.15); }
   .sheet .btn.si-ok{ flex:none; padding:10px 22px; }
+
+  /* v55 §6.1: «Добавить в Планировщик» — what came from another app, and the choice of a list */
+  .inc-prev{ display:flex; flex-direction:column; gap:10px; margin:0 0 16px; padding:12px 14px; border:1px solid var(--border-soft);
+    border-radius:var(--radius-m); background:var(--surface); }
+  .inc-subj{ font-weight:600; font-size:15px; line-height:1.35; color:var(--text); overflow-wrap:anywhere; }
+  .inc-text{ font-size:13.5px; line-height:1.45; color:var(--text-dim); white-space:pre-wrap; overflow-wrap:anywhere;
+    display:-webkit-box; -webkit-line-clamp:6; -webkit-box-orient:vertical; overflow:hidden; }
+  .inc-pics{ display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; }
+  .inc-pics img{ flex:none; width:64px; height:64px; object-fit:cover; border-radius:8px; background:var(--surface-3); }
+  .inc-more{ flex:none; width:64px; height:64px; border-radius:8px; background:var(--surface-3); color:var(--text-dim); display:grid; place-items:center; font:600 14px var(--font-body); }
+  .inc-aud{ display:flex; align-items:center; gap:10px; font-size:12.5px; line-height:1.35; color:var(--text-faint); }
+  .inc-aud svg{ width:20px; height:20px; flex:none; fill:none; stroke:var(--text-dim); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .inc-aud span{ min-width:0; }
+  .inc-aud b{ display:block; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .inc-note{ font-size:12px; line-height:1.4; color:var(--text-faint); }
+  .sheet .hint.inc-hint{ text-align:center; margin:-2px 0 6px; }
+  .lpick .outcomeopt .name{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .lpick .lp-n{ flex:none; font:500 12px var(--font-mono); color:var(--text-faint); }
+  .lp-new{ margin-top:10px; }
+  .lp-new .addstage{ margin-bottom:6px; }
+  .lp-row{ display:flex; gap:8px; margin-bottom:8px; }
+  .lp-row input{ flex:1 1 0%; min-width:0; background:var(--surface); border:1px solid var(--type-current); color:var(--text); border-radius:var(--radius-s);
+    padding:10px 12px; font:500 16px var(--font-body); outline:none; }
+  .sheet .lp-row .stgbtn{ flex:none; padding:9px 16px; }
 
   /* ---------- task detail: quick controls moved from the old list cards ---------- */
   .detailctrls{ display:flex; gap:8px; flex-wrap:wrap; margin:0 0 16px; }
@@ -1302,7 +1431,8 @@
     <div class="pwin-list" id="projList"></div>
     <div class="pwin-foot"><button type="button" class="btn btn-primary pwin-back" id="projBack">ВЕРНУТЬСЯ</button>
       <div class="pwin-selbar" id="projSelBar" hidden><button type="button" class="btn btn-secondary" id="projSelCancel">Отмена</button>
-        <button type="button" class="btn btn-secondary" id="projSelAll">Все</button><button type="button" class="btn btn-primary" id="projSelSave" disabled>Сохранить</button><button type="button" class="btn btn-primary" id="projSelGo" disabled>Поделиться</button></div></div>
+        <button type="button" class="btn btn-secondary" id="projSelAll">Все</button><button type="button" class="btn btn-primary" id="projSelSave" disabled>Сохранить</button><button type="button" class="btn btn-primary" id="projSelGo" disabled>Поделиться</button>
+        <button type="button" class="btn btn-secondary" id="projSelMove" disabled>Перенести</button></div></div>
   </div>
 </div>
 
@@ -1366,7 +1496,26 @@
   var DELAY_SHORT = { time:'По времени', forces:'По силам', means:'По средствам', ksa:'По ЗУН' };
 
   function cssv(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
-  function typeColor(key){ return cssv(TYPES[key].cssvar); }
+  // замечание 14 октября: свой цвет категории — везде, где цвет категории (полоска под названием на верхней панели, окно
+  // выбора категории, папки, виджеты); themeTypeColor — цвет темы («как в теме»)
+  function themeTypeColor(key){ return cssv(TYPES[key].cssvar); }
+  function typeColor(key){ return catCustom(key) || themeTypeColor(key); }
+  /* v57 §8.4: свой цвет ярлыка категории (settings.ui.catColors = { per, pck, tek, vos }; пусто — как в теме) */
+  var CAT_KEYS = { perspective: 'per', periodic: 'pck', current: 'tek', restore: 'vos' };
+  function catCustom(type){ var cc = settings && settings.ui && settings.ui.catColors; return (cc && hexNorm(cc[CAT_KEYS[type]])) || null; }
+  function catColor(type){ return typeColor(type); }
+  // слово категории на папке: свой цвет, затемнённый на светлых папках и осветлённый на тёмных, чтобы читалось
+  function catInkOf(type){
+    var c = catCustom(type), F = curFace();
+    if(!c) return F.catInk[type] || F.sub;
+    var ink = hexNorm(F.ink) || '#333333', darkFolder = hexLum(ink) > 0.35;
+    for(var i = 0; i < 10; i++){
+      var L = hexLum(c);
+      if(darkFolder ? L >= 0.42 : L <= 0.16) break;
+      c = hexMix(c, darkFolder ? '#ffffff' : '#000000', 0.16);
+    }
+    return c;
+  }
   function statusColor(key){ return cssv(STATUS[key].cssvar); }
 
   /* ================= state ================= */
@@ -3464,6 +3613,14 @@
     var onSys = function(){ if(settings.ui.scheme === 'auto') onSchemeChange(); };
     if(mqLight.addEventListener) mqLight.addEventListener('change', onSys); else if(mqLight.addListener) mqLight.addListener(onSys);
   }
+  /* v56 §7.1: Android-приложению — тема и режим для заставки следующих запусков (фон темы и её тумба вместо затемнения) */
+  var splashSent = '', splashReady = false;         // до загрузки параметров не посылается (иначе ушла бы тема по умолчанию)
+  function syncSplash(){
+    var b = window.AndroidBridge; if(!splashReady || !b || typeof b.setSplashTheme !== 'function') return;
+    var id = KTHEMES[settings.ui.theme] ? settings.ui.theme : 'steel', sc = settings.ui.scheme || 'auto', sig = id + '|' + sc;
+    if(sig === splashSent) return;
+    try{ if(b.setSplashTheme(id, sc)) splashSent = sig; }catch(e){}
+  }
   function applyScheme(){
     var sc = settings.ui.scheme, el = document.documentElement;
     if(sc === 'light' || sc === 'dark'){ if(el.getAttribute('data-theme') !== sc) el.setAttribute('data-theme', sc); }
@@ -3472,7 +3629,10 @@
   var UI_DEF = { titles:['Задачи','Списки'], vib:true, vibMs:25, shake:false, nudge:false, clicks:[0,8], theme:'steel', counter:true, scheme:'auto', impRed:true, impText:'ВАЖНО', fader:[0.38,0.62], sphereSwitch:true };
   function normUI(sv){
     var u = { titles:UI_DEF.titles.slice(), vib:UI_DEF.vib, vibMs:UI_DEF.vibMs, shake:UI_DEF.shake, nudge:UI_DEF.nudge, clicks:UI_DEF.clicks.slice(),
-              theme:UI_DEF.theme, counter:UI_DEF.counter, scheme:UI_DEF.scheme, impRed:UI_DEF.impRed, impText:UI_DEF.impText, fader:UI_DEF.fader.slice(), sphereSwitch:UI_DEF.sphereSwitch };
+              theme:UI_DEF.theme, counter:UI_DEF.counter, scheme:UI_DEF.scheme, impRed:UI_DEF.impRed, impText:UI_DEF.impText, fader:UI_DEF.fader.slice(), sphereSwitch:UI_DEF.sphereSwitch, catColors:{}, catNames:{} };
+    if(sv && sv.catColors && typeof sv.catColors === 'object') ['per','pck','tek','vos'].forEach(function(k){ var c = hexNorm(sv.catColors[k]); if(c) u.catColors[k] = c; });
+    u.catNames = {};
+    if(sv && sv.catNames && typeof sv.catNames === 'object') ['per','pck','tek','vos'].forEach(function(k){ var n = String(sv.catNames[k] || '').replace(/\s+/g, ' ').trim().slice(0, 24); if(n) u.catNames[k] = n; });
     if(sv && typeof sv==='object'){
       if(Array.isArray(sv.titles)) sv.titles.forEach(function(t,i){ if(i<2 && typeof t==='string' && t.trim()) u.titles[i] = t.trim().slice(0,24); });
       if(typeof sv.vib==='boolean') u.vib = sv.vib;
@@ -3676,7 +3836,23 @@
   var groups = [], grpCol = null;
   /* a group's colour (its tab on the folders and its dot in «Группа: …»): one of GRP_COLORS, or none — the theme's ✓ colour */
   var GRP_COLORS = ['#d9534f', '#ec8a2f', '#e2b53e', '#5aa55e', '#2f9c95', '#3f7fd9', '#7a62d0', '#cf5a96', '#7d8590'];
-  function grpColor(c){ c = String(c || '').toLowerCase(); return GRP_COLORS.indexOf(c) >= 0 ? c : null; }
+  // v57 §8.4: кроме цветов палитры — «Свой цвет» (любой #rrggbb)
+  function hexNorm(c){ var m = /^#?([0-9a-f]{6})$/i.exec(String(c || '').trim()); return m ? '#' + m[1].toLowerCase() : null; }
+  function grpColor(c){ return hexNorm(c); }
+  function hexRgb(h){ h = hexNorm(h) || '#000000'; return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
+  function rgbHex(r, g, b){ return '#' + [r, g, b].map(function(v){ v = Math.max(0, Math.min(255, Math.round(v))); return (v < 16 ? '0' : '') + v.toString(16); }).join(''); }
+  function hexHsv(h){
+    var c = hexRgb(h), r = c[0] / 255, g = c[1] / 255, b = c[2] / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn, hh = 0;
+    if(d){ hh = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; hh *= 60; if(hh < 0) hh += 360; }
+    return [hh, mx ? d / mx : 0, mx];
+  }
+  function hsvHex(h, sa, v){
+    var c = v * sa, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = v - c, r = 0, g = 0, b = 0, k = Math.floor(h / 60) % 6;
+    if(k === 0){ r = c; g = x; } else if(k === 1){ r = x; g = c; } else if(k === 2){ g = c; b = x; } else if(k === 3){ g = x; b = c; } else if(k === 4){ r = x; b = c; } else { r = c; b = x; }
+    return rgbHex((r + m) * 255, (g + m) * 255, (b + m) * 255);
+  }
+  function hexLum(h){ var c = hexRgb(h).map(function(v){ v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; }
+  function hexMix(a, b, t){ var x = hexRgb(a), y = hexRgb(b); return rgbHex(x[0] + (y[0] - x[0]) * t, x[1] + (y[1] - x[1]) * t, x[2] + (y[2] - x[2]) * t); }
   // the sign colour on a group colour: dark on light colours, white on the others
   function grpInk(hex){
     var h = String(hex).replace('#', ''); if(h.length !== 6) return '#ffffff';
@@ -3778,7 +3954,7 @@
   var spheres = [], sphCol = null;
   var MAIN_SPH = 'main', MAIN_SPH_NAME = 'Основная сфера деятельности';
   var SPH_COLORS = ['#3f7fd9', '#5aa55e', '#ec8a2f', '#d9534f', '#7a62d0', '#2f9c95', '#cf5a96', '#e2b53e', '#8a5a3c', '#7d8590'];
-  function sphColor(c){ c = String(c || '').toLowerCase(); return SPH_COLORS.indexOf(c) >= 0 ? c : null; }
+  function sphColor(c){ return hexNorm(c); }               // v57 §8.4: и «Свой цвет»
   function hhmm(v){ var m = /^(\d{1,2}):(\d{2})$/.exec(String(v || '')); if(!m) return null; var h = +m[1], n = +m[2]; return (h < 24 && n < 60) ? pad2(h) + ':' + pad2(n) : null; }
   function normSphere(s){
     s = s || {};
@@ -3796,7 +3972,7 @@
       hours: (Array.isArray(s.hours) ? s.hours : []).map(function(h){ return { from: hhmm(h && h.from), to: hhmm(h && h.to) }; })
                .filter(function(h){ return h.from && h.to && h.from !== h.to; }),
       pauseUntil: /^\d{4}-\d{2}-\d{2}$/.test(s.pauseUntil || '') ? s.pauseUntil : '',
-      theme: (typeof s.theme === 'string' && KTHEMES[s.theme]) ? s.theme : '',
+      theme: '',                                           // v57 §8.6: у сфер своей темы больше нет (старое поле не читается)
       impText: String(s.impText || '').trim().slice(0, 14),
       staff: { managers: strs(st.managers), executors: strs(st.executors) },
       // §5: the switch «Выкл / Авто / Вкл» (before v41 — manual: true / false)
@@ -4389,7 +4565,18 @@
 
   /* ================= segmented category bar ================= */
   var SEG_LABELS = { all:'Все', perspective:'Перспективные', periodic:'Периодические', current:'Текущие', restore:'Порядок' };
-  function segColors(){ return curTheme().app.segColors; }   // colour of the strip under the glass, per category (from the theme)
+  /* замечание 14 октября: свои названия категорий (settings.ui.catNames = { per, pck, tek, vos }; пусто — прежнее) — везде
+     в приложении: верхняя панель, папки, окна задач, «Отчёты», виджеты. Что делает категория, не меняется. */
+  var CAT_DEF = {}; TYPE_ORDER.forEach(function(k){ CAT_DEF[k] = { label: TYPES[k].label, seg: SEG_LABELS[k] }; });
+  function catName(k){ var cn = settings && settings.ui && settings.ui.catNames, v = cn && String(cn[CAT_KEYS[k]] || '').trim(); return v || ''; }
+  function applyCatNames(){
+    TYPE_ORDER.forEach(function(k){ var n = catName(k); TYPES[k].label = n || CAT_DEF[k].label; SEG_LABELS[k] = n || CAT_DEF[k].seg; });
+  }
+  function segColors(){                                     // colour of the strip under the glass, per category (from the theme; own colours over it)
+    var s = Object.assign({}, curTheme().app.segColors);
+    TYPE_ORDER.forEach(function(k){ var c = catCustom(k); if(c) s[k] = c; });
+    return s;
+  }
   var SUMMARY_SEG_ORDER = ['all'].concat(TYPE_ORDER);
   var MANAGE_SEG_ORDER = TYPE_ORDER.slice();
 
@@ -4444,7 +4631,9 @@
       wireSegBar(chiprowEl, onPick);
     } else {
       chiprowEl.querySelectorAll('.segbtn').forEach(function(b){
-        b.classList.toggle('active', b.getAttribute('data-k')===current);
+        var k = b.getAttribute('data-k');
+        b.classList.toggle('active', k===current);
+        if(SEG_LABELS[k] && b.textContent !== SEG_LABELS[k]){ b.textContent = SEG_LABELS[k]; b.style.flex = SEG_LABELS[k].length + ' 1 0%'; }   // переименована
       });
     }
     positionSegIndicator(chiprowEl, order, current);
@@ -4735,6 +4924,7 @@
   });
 
   function render(){
+    applyCatNames();
     adoptBaseTasks();                                      // §8.2 / §8.5: the base's tasks belong to the first own sphere
     migrateGroups();                                       // v44 §9: the groups made before v44 get their sphere (once)
     curView = sphView(); lastViewSig = viewSig(curView);   // the spheres on the screen are taken anew for every render
@@ -4759,7 +4949,7 @@
     var done = COMPLETED.indexOf(t.status) >= 0;
     var it = {
       id: t.id, name: t.title || '', cat: SEG_LABELS[t.type] || TYPES[t.type].label.split(' ')[0],
-      catInk: curFace().catInk[t.type] || curFace().sub, color: typeColor(t.type), prio: !!t.priority && !done,
+      catInk: catInkOf(t.type), color: catColor(t.type), prio: !!t.priority && !done,
       prog: stageProgress(t) || '', segs: stageSegs(t), right: ''
     };
     var sph = sphereOf(t); if(sph && sph.impText) it.impWord = sph.impText;   // §3.10: the sphere's own word for the priority mark
@@ -4773,7 +4963,7 @@
     } else if(done){
       it.ctl = 'none'; it.status = STATUS[t.status].label; it.statusColor = statusColor(t.status);
     } else if(t.type==='periodic'){
-      it.ctl = 'periodic'; it.status = 'Периодическая'; it.statusColor = typeColor('periodic');
+      it.ctl = 'periodic'; it.status = catName('periodic') || 'Периодическая'; it.statusColor = typeColor('periodic');
     } else {
       it.ctl = 'active'; it.status = STATUS_SHORT[t.status] || STATUS[t.status].label; it.statusColor = statusColor(t.status);
     }
@@ -4923,9 +5113,13 @@
     if(later) parts.push(later + ' позже');
     if(late) parts.push(late + ' ' + plural3(late, ['просрочена','просрочены','просрочено']));
     var l2 = parts.length ? 'Сроки: ' + parts.join(' · ') : 'Сроки не заданы';
+    // v57 §8.1: сокращённые сроки — для маленького экрана, когда полные не помещаются
+    var ps = [];
+    if(wk) ps.push(wk + ' нед'); if(mo) ps.push(mo + ' мес'); if(yr) ps.push(yr + ' год'); if(ny) ps.push(ny + ' след. год'); if(later) ps.push(later + ' позже'); if(late) ps.push(late + ' просроч.');
+    var l2s = ps.length ? 'Сроки: ' + ps.join(' · ') : 'Сроки не заданы';
     var c = { unset: 0, setup: 0, process: 0 }; ts.forEach(function(t){ if(c[t.status] !== undefined) c[t.status]++; });
     var l3 = 'Не поставлено ' + c.unset + ' · Поставлено ' + c.setup + ' · Выполняется ' + c.process;
-    return [l1, l2, l3];
+    var out = [l1, l2, l3]; out.short = l2s; return out;
   }
   /* v44 §9: with several spheres on the screen at once a group shows where it is from: the sphere's name on a collapsed
      group, a strip of the sphere's colour on the group's tab */
@@ -4938,6 +5132,7 @@
   function groupFolderItem(e){
     var o = { id: 'g:' + e.grp.id, ctl: 'group', name: e.grp.name || 'Группа', grp: e.grp.name || 'Группа', grpEnd: true, collapsed: true,
              count: e.tasks.length, color: '', stats: groupStats(e.tasks) };
+    o.statsShort = o.stats.short;                     // v57 §8.1
     if(e.grp.color){ o.gcol = e.grp.color; o.gink = grpInk(e.grp.color); }
     grpOrigin(o, e.grp);
     return o;
@@ -5447,6 +5642,74 @@
       });
     });
   }
+  /* v57 §8.4: «Цвета категорий» — у каждой строки точка цвета; нажатие выдвигает строку цветов: «как в теме», палитра, «Свой цвет» */
+  var catOpen = '';
+  var CAT_CHEV = '<svg class="uimore-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg>';
+  function catSwatches(k){
+    var cc = catCustom(k), sw = '<button type="button" class="grpsw' + (cc ? '' : ' on') + '" data-cc="" style="--gc:' + themeTypeColor(k) + '" aria-label="Как в теме" title="Как в теме"><i></i></button>';
+    var inPal = false;
+    GRP_COLORS.forEach(function(c){ var on = cc === c; if(on) inPal = true; sw += '<button type="button" class="grpsw' + (on ? ' on' : '') + '" data-cc="' + c + '" style="--gc:' + c + '" aria-label="Цвет ' + c + '"><i></i></button>'; });
+    return sw + customSwHTML('grpsw', !!cc && !inPal, cc, ' data-ccx="1"');
+  }
+  function catColorsHTML(){
+    applyCatNames();
+    return '<div class="uigrp" id="uiCatColors"><div class="uigrp-t">Категории: названия и цвета</div><div class="uirows">' +
+      TYPE_ORDER.map(function(k){
+        var open = catOpen === k, cc = catCustom(k), nm = catName(k);
+        var sub = (nm ? 'было «' + CAT_DEF[k].seg + '»' : 'название как было') + ' · ' + (cc ? 'свой цвет' : 'цвет как в теме');
+        return '<button type="button" class="uirow uimorebtn ucat" data-cat="' + k + '" aria-expanded="' + open + '">' +
+            '<span class="ucat-dot" style="background:' + catColor(k) + '"></span>' +
+            '<span class="lbl">' + esc(SEG_LABELS[k]) + '<small>' + esc(sub) + '</small></span>' + CAT_CHEV + '</button>' +
+          '<div class="uimore' + (open ? ' open' : '') + '" data-catrow="' + k + '"' + (open ? '' : ' inert') + '><div>' +
+            '<label class="ucat-name"><span>Название</span><input type="text" maxlength="24" value="' + esc(nm) + '" placeholder="' + esc(CAT_DEF[k].seg) + '" aria-label="Название категории «' + esc(CAT_DEF[k].seg) + '»" autocomplete="off" enterkeyhint="done"></label>' +
+            '<div class="ucat-sw">' + catSwatches(k) + '</div></div></div>';
+      }).join('') +
+      '</div><p class="unote">Название меняется везде в приложении и на виджетах; что делает категория, остаётся как было. Пустое поле — прежнее название. Цвет — у ярлыка папки, слова категории на папке, полоски под названием на верхней панели и в окне выбора категории.</p></div>';
+  }
+  function wireCatColors(box){
+    var grp = box.querySelector('#uiCatColors'); if(!grp) return;
+    function redraw(){ var h = document.createElement('div'); h.innerHTML = catColorsHTML(); var n = h.firstElementChild; grp.replaceWith(n); grp = n; wire(); }
+    function setName(k, n){
+      var U = settings.ui; U.catNames = U.catNames || {};
+      n = String(n || '').replace(/\s+/g, ' ').trim().slice(0, 24);
+      if(n === CAT_DEF[k].seg) n = '';
+      if((U.catNames[CAT_KEYS[k]] || '') === n) return;
+      if(n) U.catNames[CAT_KEYS[k]] = n; else delete U.catNames[CAT_KEYS[k]];
+      applyCatNames(); saveUI(); render(); if(kart && kart.repaintFolders) kart.repaintFolders();
+      redraw();
+    }
+    function setCat(k, c){
+      var U = settings.ui; U.catColors = U.catColors || {};
+      if(c) U.catColors[CAT_KEYS[k]] = c; else delete U.catColors[CAT_KEYS[k]];
+      saveUI(); render(); if(kart && kart.repaintFolders) kart.repaintFolders();
+      redraw();
+    }
+    function wire(){
+      grp.querySelectorAll('.ucat').forEach(function(b){
+        b.addEventListener('click', function(){
+          var k = b.getAttribute('data-cat'); catOpen = catOpen === k ? '' : k;
+          grp.querySelectorAll('.ucat').forEach(function(x){ x.setAttribute('aria-expanded', x.getAttribute('data-cat') === catOpen); });
+          grp.querySelectorAll('[data-catrow]').forEach(function(r){ var on = r.getAttribute('data-catrow') === catOpen; r.classList.toggle('open', on); if(on) r.removeAttribute('inert'); else r.setAttribute('inert', ''); });
+        });
+      });
+      grp.querySelectorAll('[data-catrow]').forEach(function(r){
+        var k = r.getAttribute('data-catrow');
+        r.querySelectorAll('[data-cc]').forEach(function(b){ b.addEventListener('click', function(){ setCat(k, hexNorm(b.getAttribute('data-cc'))); }); });
+        var ni = r.querySelector('.ucat-name input');
+        if(ni){
+          ni.addEventListener('change', function(){ setName(k, ni.value); });
+          ni.addEventListener('keydown', function(ev){ if(ev.key === 'Enter'){ ev.preventDefault(); ni.blur(); } });
+        }
+        var cx = r.querySelector('[data-ccx]');
+        if(cx) cx.addEventListener('click', function(){
+          openColorPick({ title: 'Свой цвет · ' + SEG_LABELS[k], color: catCustom(k) || typeColor(k),
+            sample: function(c){ return '<div class="cp-fold"><span class="cp-tab" style="background:' + c + ';color:' + grpInk(c) + '">' + esc(SEG_LABELS[k]) + '</span><b style="color:' + c + '">' + esc(SEG_LABELS[k].toUpperCase()) + '</b></div>'; },
+            pick: function(c){ setCat(k, c); } });
+        });
+      });
+    }
+    wire();
+  }
   function uiSettingsHTML(){
     var U = settings.ui;
     var PLAY = '<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" fill="currentColor"/></svg>';
@@ -5464,7 +5727,7 @@
         '<button type="button" class="uirow uimorebtn" id="uiMoreBtn" aria-controls="uiMore" aria-expanded="' + themesOpen + '">' +
           '<span class="lbl" id="uiMoreLbl">' + moreThemesLabel() + '</span>' +
           '<svg class="uimore-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button>' : '') +
-      '</div><p class="unote">Тема задаёт графику и шрифты тумбы, ящиков и папок, верхней панели, шторок, окон задач и кнопки «+». Сфера деятельности может задать свою тему — тогда, пока на экране эта сфера, действует её тема.</p></div>';
+      '</div><p class="unote">Тема задаёт графику и шрифты тумбы, ящиков и папок, верхней панели, шторок, окон задач и кнопки «+».</p></div>';
     html += appIconsHTML();
     html += '<div class="uigrp"><div class="uigrp-t">Светлый и тёмный режим</div><div class="uirows" role="radiogroup" aria-label="Светлый и тёмный режим">' +
       SCHEMES.map(function(k){
@@ -5472,6 +5735,7 @@
         return '<button type="button" role="radio" aria-checked="' + on + '" class="uirow uopt' + (on?' on':'') + '" data-scheme="' + k + '">' +
           '<span class="lbl">' + SCHEME_LABELS[k] + '</span>' + CHECK + '</button>';
       }).join('') + '</div><p class="unote">«Как в системе» — режим меняется вместе с настройкой телефона или компьютера.</p></div>';
+    html += catColorsHTML();
     html += '<div class="uigrp"><div class="uigrp-t">Переключатель сфер</div><div class="uirows">' +
       '<label class="uirow"><span class="lbl">Показывать переключатель<small>карточки сфер деятельности внизу, слева от «+»</small></span>' + uiSwitch('uiSphSwitch', U.sphereSwitch !== false) + '</label>' +
       '</div><p class="unote">Нажатие на карточку меняет сферу на экране. Без переключателя на экране всегда сферы по расписанию.</p></div>';
@@ -5521,6 +5785,7 @@
   }
   function wireUISettings(box){
     var U = function(){ return settings.ui; };
+    wireCatColors(box);
     function syncClickNames(){
       box.querySelectorAll('.ui-clkname').forEach(function(el){ el.textContent = U().titles[+el.getAttribute('data-i')]; });
       box.querySelectorAll('.ui-click').forEach(function(sel){ sel.setAttribute('aria-label', 'Щелчок ящика «' + U().titles[+sel.getAttribute('data-i')] + '»'); });
@@ -6173,8 +6438,10 @@
       });
     }
     var urls = {};
-    function url(e, f, type){
+    function url(e, f, type, size){
       var k = e + '/' + f; if(urls[k]) return Promise.resolve(urls[k]);
+      // v55 §6.1: a big sound from another app (up to 50 MB) is played straight from the app's folder, not read through the bridge
+      if(size > 16 * 1024 * 1024 && A && typeof A.incomingVersion === 'function') return Promise.resolve(location.origin + '/att/' + encodeURIComponent(e) + '/' + encodeURIComponent(f));
       return read(e, f, type).then(function(b){ if(!b) return null; return (urls[k] = URL.createObjectURL(b)); });
     }
     function forget(e, f){ var k = e + '/' + f; if(urls[k]){ try{ URL.revokeObjectURL(urls[k]); }catch(_){} delete urls[k]; } }
@@ -6183,10 +6450,23 @@
     function delEntry(e, o){ files(o).forEach(function(f){ forget(e, f); }); try{ if(ok) A.attDeleteEntry(e); }catch(_){} }
     function normAudio(a){
       return Array.isArray(a) ? a.filter(function(x){ return x && x.id && x.file; }).slice(0, 100).map(function(x){
-        return { id: String(x.id), file: String(x.file), dur: Math.max(0, Math.round(+x.dur || 0)), size: Math.max(0, Math.round(+x.size || 0)),
+        var o = { id: String(x.id), file: String(x.file), dur: Math.max(0, Math.round(+x.dur || 0)), size: Math.max(0, Math.round(+x.size || 0)),
           wave: Array.isArray(x.wave) ? x.wave.slice(0, 80).map(function(v){ return Math.max(0, Math.min(100, Math.round(+v || 0))); }) : [] };
+        // v55 §6.1: a sound that came from another app keeps its type and its own name (a voice record of the app has neither)
+        if(x.mime && /^audio\/[\w.+-]{1,60}$/i.test(String(x.mime))) o.mime = String(x.mime).toLowerCase();
+        if(x.name) o.name = String(x.name).slice(0, 120);
+        return o;
       }) : [];
     }
+    /* v55 §6.1: can the app's browser play this sound? (a voice record of the app — always) */
+    var canPlayCache = {};
+    function playable(x){
+      var m = x && x.mime; if(!m || m === 'audio/mp4' || m === 'audio/m4a' || m === 'audio/x-m4a') return true;
+      if(!(m in canPlayCache)){ var r = ''; try{ r = document.createElement('audio').canPlayType(m); }catch(_){} canPlayCache[m] = r !== ''; }
+      return canPlayCache[m];
+    }
+    function audioType(x){ return (x && x.mime) || 'audio/mp4'; }
+    function extOf(file, def){ var m = /\.([a-z0-9]{1,5})$/i.exec(String(file || '')); return m ? m[1].toLowerCase() : def; }
     function normImages(a){
       return Array.isArray(a) ? a.filter(function(x){ return x && x.id && x.file; }).slice(0, 100).map(function(x){
         return { id: String(x.id), file: String(x.file), w: Math.max(0, Math.round(+x.w || 0)), h: Math.max(0, Math.round(+x.h || 0)), size: Math.max(0, Math.round(+x.size || 0)) };
@@ -6325,21 +6605,26 @@
       } };
     }
     return { ok: ok, MAX_IMG: MAX_IMG, MAX_MS: MAX_MS, has: has, free: free, write: write, read: read, url: url, del: del, delEntry: delEntry, files: files,
-             normAudio: normAudio, normImages: normImages, compress: compress, recStart: recStart, waveOf: waveOf, waveOfFile: waveOfFile, zipBuild: zipBuild, zipRead: zipRead };
+             normAudio: normAudio, normImages: normImages, compress: compress, recStart: recStart, waveOf: waveOf, waveOfFile: waveOfFile, zipBuild: zipBuild, zipRead: zipRead,
+             playable: playable, audioType: audioType, extOf: extOf };
   })();
   function fmtDur(ms){ var s = Math.max(0, Math.round((+ms || 0) / 1000)), m = Math.floor(s / 60); return m + ':' + pad2(s % 60); }
+  function fmtSz(n){ return n < 100 * 1024 ? Math.max(1, Math.round(n / 1024)) + ' КБ' : fmtMB(n); }   // v55: small files in KB
   function fmtMB(n){ return (n / 1048576 >= 10 ? Math.round(n / 1048576) : Math.round(n / 104857.6) / 10).toString().replace('.', ',') + ' МБ'; }
   var MIC_ICO = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></svg>';
   var PIC_ICO = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="M4 17l5-4.5 3.5 3L16 12l4 4"/></svg>';
   var PLAY_ICO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>';
   var PAUSE_ICO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.6v14H7zM13.4 5H17v14h-3.6z"/></svg>';
+  var NOTE_ICO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V5.5l10-2v12"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="15.5" r="2.5"/></svg>';
   var MISS_ICO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11M7.5 9.5L12 14l4.5-4.5"/><path d="M4.5 15v3a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3" opacity=".5"/></svg>';
   /* the strip of a voice record, like in messengers: «play», the bars of the sound, the length; a tap on the bars rewinds */
   function audioStripHTML(eid, x, removable){
     var rm = removable ? '<button type="button" class="pa-rm" aria-label="Удалить запись" title="Удалить">✕</button>' : '';
     if(!ATT.has(eid, x.file)) return '<div class="pa pa-miss">' + MISS_ICO + '<span>Вложение на другом устройстве</span>' + rm + '</div>';
+    // v55 §6.1: a sound in a format the app cannot play is kept (it can be shared or saved) with a note instead of the player
+    if(!ATT.playable(x)) return '<div class="pa pa-miss pa-nop">' + NOTE_ICO + '<span><b>' + esc(x.name || ('Звук .' + ATT.extOf(x.file, ''))) + '</b>Формат не воспроизводится в приложении' + (x.size ? ' · ' + fmtSz(x.size) : '') + '</span>' + rm + '</div>';
     var w = x.wave && x.wave.length ? x.wave : [];
-    return '<div class="pa" data-e="' + esc(eid) + '" data-f="' + esc(x.file) + '" data-dur="' + (x.dur || 0) + '" data-size="' + (x.size || 0) + '" data-w="' + w.join(',') + '"><button type="button" class="pa-play" aria-label="Играть">' + PLAY_ICO + '</button>' +
+    return '<div class="pa" data-e="' + esc(eid) + '" data-f="' + esc(x.file) + '" data-m="' + esc(ATT.audioType(x)) + '" data-dur="' + (x.dur || 0) + '" data-size="' + (x.size || 0) + '" data-w="' + w.join(',') + '"><button type="button" class="pa-play" aria-label="Играть">' + PLAY_ICO + '</button>' +
       '<div class="pa-wave">' + waveBars(w, 36) + '</div>' +
       '<span class="pa-time">' + fmtDur(x.dur) + '</span>' + rm + '</div>';
   }
@@ -6354,6 +6639,14 @@
     }
     return out;
   }
+  /* v57 §8.7: песочные часы — песок перетекает сверху вниз, часы переворачиваются (≈1,2 с на цикл) */
+  var HG_SVG = '<svg class="hglass" viewBox="0 0 32 40" aria-hidden="true"><g class="hg-turn">' +
+    '<defs><clipPath id="hgTop"><path d="M8 5h16c0 7-5 10-7 15h-2c-2-5-7-8-7-15z"/></clipPath><clipPath id="hgBot"><path d="M15 20h2c2 5 7 8 7 15H8c0-7 5-10 7-15z"/></clipPath></defs>' +
+    '<g clip-path="url(#hgTop)"><rect class="hg-top" x="6" y="5" width="20" height="15"/></g>' +
+    '<g clip-path="url(#hgBot)"><rect class="hg-bot" x="6" y="20" width="20" height="15"/></g>' +
+    '<rect class="hg-stream" x="15.4" y="19" width="1.2" height="15"/>' +
+    '<path class="hg-glass" d="M8 5h16c0 7-5 10-7 15 2 5 7 8 7 15H8c0-7 5-10 7-15C13 15 8 12 8 5z"/>' +
+    '<path class="hg-cap" d="M5 3.5h22M5 36.5h22"/></g></svg>';
   function imgHTML(eid, x, removable){
     var rm = removable ? '<button type="button" class="pi-rm" aria-label="Убрать картинку" title="Убрать">✕</button>' : '';
     if(!ATT.has(eid, x.file)) return '<div class="pimg pimg-miss">' + MISS_ICO + '<span>Вложение на другом устройстве</span>' + rm + '</div>';
@@ -6465,7 +6758,7 @@
       return;
     }
     a.pause(); PL.key = key; PL.seek = ratio;
-    ATT.url(e, f, 'audio/mp4').then(function(u){
+    ATT.url(e, f, strip.dataset.m || 'audio/mp4', +strip.dataset.size || 0).then(function(u){
       if(!u || PL.key !== key){ return; }
       a.src = u; a.play().catch(function(){});
     });
@@ -6490,7 +6783,9 @@
     overlay.hidden = false;
     document.getElementById('sheetClose').addEventListener('click', closeSheet);
   }
-  function closeSheet(){ taskDraftEnd(); mainPull.set(null); overlay.hidden = true; overlay.classList.remove('ov-top'); sheetEl.innerHTML=''; afterSheetClosed(); }
+  var sheetOnClose = null;                       // v55 §6.1: what to do once the window from below is closed (any way)
+  function closeSheet(){ taskDraftEnd(); mainPull.set(null); overlay.hidden = true; overlay.classList.remove('ov-top'); sheetEl.innerHTML=''; afterSheetClosed();
+    if(sheetOnClose){ var h = sheetOnClose; sheetOnClose = null; try{ h(); }catch(e){ console.error(e); } } }
   function setSheetSwipe(fn){ mainPull.set(fn); }
 
   /* ---- a window from below can be pulled down to close: with the window scrolled to its top, a downward swipe
@@ -6636,7 +6931,51 @@
     subOverlay.hidden = false;
     document.getElementById('subSheetClose').addEventListener('click', closeSubSheet);
   }
-  function closeSubSheet(){ subPull.set(null); subOverlay.hidden = true; subSheetEl.innerHTML=''; afterSheetClosed(); }
+  function closeSubSheet(){ subPull.set(null); subOverlay.hidden = true; subOverlay.classList.remove('cp-top'); subSheetEl.innerHTML=''; afterSheetClosed(); }
+
+  /* v57 §8.4: «Свой цвет» — небольшое окно выбора: полоса оттенка, поле насыщенности и яркости, образец.
+     o = { title, color, sample(hex) → HTML образца, pick(hex) } */
+  var CUSTOM_SW_TITLE = 'Свой цвет';
+  function customSwHTML(cls, on, color, attrs){
+    return '<button type="button" class="' + cls + ' cpsw' + (on ? ' on' : '') + '"' + (attrs || '') + ' style="--gc:' + (on && color ? color : 'transparent') + '" aria-label="' + CUSTOM_SW_TITLE + '" title="' + CUSTOM_SW_TITLE + '"><i></i></button>';
+  }
+  function openColorPick(o){
+    var hsv = hexHsv(hexNorm(o.color) || '#3f7fd9'), cur = hsvHex(hsv[0], hsv[1], hsv[2]);
+    openSubSheet('<h2>' + esc(o.title || CUSTOM_SW_TITLE) + '</h2><div class="sheet-sub">Оттенок — на полосе, насыщенность и яркость — на поле</div>' +
+      '<div class="cp-sample" id="cpSample"></div>' +
+      '<div class="cp-sv" id="cpSV"><i class="cp-knob"></i></div>' +
+      '<div class="cp-hue" id="cpHue"><i class="cp-knob"></i></div>' +
+      '<div class="cp-hex" id="cpHex"></div>' +
+      '<div class="sheet-actions"><button type="button" class="btn btn-secondary" id="cpNo">Отмена</button><button type="button" class="btn btn-primary" id="cpOk">Готово</button></div>');
+    subOverlay.classList.add('cp-top');
+    var sv = document.getElementById('cpSV'), hu = document.getElementById('cpHue'), sm = document.getElementById('cpSample'), hx = document.getElementById('cpHex');
+    function paint(){
+      cur = hsvHex(hsv[0], hsv[1], hsv[2]);
+      sv.style.setProperty('--h', Math.round(hsv[0]));
+      var k1 = sv.querySelector('.cp-knob'), k2 = hu.querySelector('.cp-knob');
+      k1.style.left = (hsv[1] * 100) + '%'; k1.style.top = ((1 - hsv[2]) * 100) + '%'; k1.style.background = cur;
+      k2.style.left = (hsv[0] / 360 * 100) + '%'; k2.style.background = hsvHex(hsv[0], 1, 1);
+      sm.innerHTML = o.sample ? o.sample(cur) : '<span style="background:' + cur + '"></span>';
+      hx.textContent = cur.toUpperCase();
+    }
+    function drag(el, fn){
+      el.addEventListener('pointerdown', function(ev){
+        ev.preventDefault(); ev.stopPropagation();
+        try{ el.setPointerCapture(ev.pointerId); }catch(_){}
+        var at = function(e){ var r = el.getBoundingClientRect(); fn(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)), Math.max(0, Math.min(1, (e.clientY - r.top) / r.height))); paint(); };
+        at(ev);
+        var mv = function(e){ if(e.pointerId === ev.pointerId) at(e); };
+        var up = function(e){ if(e.pointerId !== ev.pointerId) return; el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up); };
+        el.addEventListener('pointermove', mv); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+      });
+      el.addEventListener('touchmove', function(e){ if(e.cancelable) e.preventDefault(); }, { passive: false });
+    }
+    drag(sv, function(x, y){ hsv[1] = x; hsv[2] = 1 - y; });
+    drag(hu, function(x){ hsv[0] = Math.min(359.9, x * 360); if(hsv[1] < 0.05 && hsv[2] > 0.95){ hsv[1] = 0.7; hsv[2] = 0.85; } });
+    document.getElementById('cpNo').addEventListener('click', closeSubSheet);
+    document.getElementById('cpOk').addEventListener('click', function(){ var c = cur; closeSubSheet(); if(o.pick) o.pick(c); });
+    paint();
+  }
 
   function openPickList(title, options, currentVal, onPick){
     var html = '<h2>' + esc(title) + '</h2>' +
@@ -6709,6 +7048,7 @@
         var sw = '<button type="button" class="grpsw' + (g.color ? '' : ' on') + '" data-a="setcol" data-c="" style="--gc:var(--grp-def)" aria-label="Цвет темы"><i></i></button>';
         var n = 1;
         GRP_COLORS.forEach(function(c){ if(c !== g.color && grpNear(c, defCol)) return; n++; sw += '<button type="button" class="grpsw' + (g.color === c ? ' on' : '') + '" data-a="setcol" data-c="' + c + '" style="--gc:' + c + '" aria-label="Цвет ' + c + '"><i></i></button>'; });
+        n++; sw += customSwHTML('grpsw', !!g.color && GRP_COLORS.indexOf(g.color) < 0, g.color, ' data-a="custom"');   // v57 §8.4
         html += rowHtml('c' + g.id, col, g.id, sw, n);
         html += rowHtml('p' + g.id, pen, g.id,
           (ed ? '<button type="button" class="stgbtn primary" data-a="save">Сохранить</button><button type="button" class="stgbtn" data-a="cancel">Отмена</button>'
@@ -6745,6 +7085,13 @@
       if(a === 'pick'){ set(id); label(); setOpen(false); return; }
       if(a === 'pen'){ if(editId === id){ editId = null; openPen = null; } else openPen = openPen === id ? null : id; fill(); return; }
       if(a === 'color'){ openCol = openCol === id ? null : id; fill(); return; }   // the same dot closes it, a colour chosen or not
+      if(a === 'custom'){                         // v57 §8.4: «Свой цвет» группы
+        var g1 = groupById(id); if(!g1) return;
+        openColorPick({ title: 'Свой цвет группы', color: g1.color || curFace().doneBg,
+          sample: function(c){ return '<div class="cp-fold" style="align-items:flex-end"><span class="cp-tab" style="background:' + c + ';color:' + grpInk(c) + '">' + esc(g1.name || 'Группа') + '</span><b></b></div>'; },
+          pick: function(c){ act('setcol', id, c); } });
+        return;
+      }
       if(a === 'setcol'){
         var gg = groupById(id), c = grpColor(arg);
         if(gg && (gg.color || null) !== c){ if(c) gg.color = c; else delete gg.color; persistGroup(gg); }
@@ -6816,7 +7163,7 @@
           '<span class="fill"></span><span class="label">' + (t.priority ? 'Высокий приоритет' : 'Отметить важной') + '</span>' +
         '</button>' +
         (t.type==='periodic'
-          ? '<span class="statuspill">Периодическая</span>'
+          ? '<span class="statuspill">' + esc(catName('periodic') || 'Периодическая') + '</span>'
           : '<button class="statusselect" id="btnStatus">' + esc(STATUS_SHORT[t.status] || st.label) + '<span class="caret">▾</span></button>') +
       '</div>';
     }
@@ -6854,6 +7201,7 @@
       }
       html += f('Описание результата', t.resultDescription);
       html += f('Реквизиты отчётов', t.reportRequisites);
+      html += f('Примечание', t.note);             // v56 (ответ 14 октября): примечание, перешедшее из «Порядка», видно, пока заполнено
     } else {
       html += f('Примечание', t.note);
     }
@@ -7039,6 +7387,8 @@
     if(preset && !editing && !draft){                     // v52 §3.1: the preset of the widget «Быстрая задача»
       managerVal = preset.manager || ''; executorVal = preset.executor || '';
       groupLocal = preset.group && groupById(preset.group) ? preset.group : null;
+      // v55 §6.1: «Поделиться → Планировщик» → «Новая задача»: всё пришедшее — в название задачи
+      if(preset.title) t.title = String(preset.title);
     }
     // v44 §9: the sphere the task will be in — its groups are the ones offered (the base, or the first own sphere, when none is set)
     var formSph = function(){ return sphLocal ? (sphereById(sphLocal) && !sphereById(sphLocal).main ? sphLocal : (hasUserSpheres() ? null : MAIN_SPH)) : (hasUserSpheres() ? null : MAIN_SPH); };
@@ -7090,6 +7440,7 @@
 
       html += fieldText('f_result', 'Описание результата', tv.resultDescription, true);
       html += fieldText('f_reqs', 'Реквизиты отчётов', tv.reportRequisites, true);
+      if(String(tv.note || '').trim()) html += fieldText('f_note', 'Примечание', tv.note, true);   // v56: только если заполнено
     } else {
       html += fieldText('f_note', 'Примечание', tv.note, true);
     }
@@ -7109,6 +7460,9 @@
       fTitle.addEventListener('input', function(){           // a pasted text, or a keyboard that sends the line break as a letter
         if(/[\r\n]/.test(fTitle.value)) fTitle.value = fTitle.value.replace(/\s*[\r\n]+\s*/g, ' ');
       });
+      // v55 §6.1: пришедший текст в названии виден целиком — поле вырастает под него (не выше 40% экрана, дальше прокрутка в поле)
+      if(preset && preset.title && !editing && !draft && fTitle.scrollHeight > fTitle.clientHeight + 2)
+        fTitle.style.height = Math.min(fTitle.scrollHeight + 4, Math.round(window.innerHeight * 0.4)) + 'px';
     }
     var fGroupPick = groupPicker(document.getElementById('f_group'), function(){ return groupLocal; }, function(id){ groupLocal = id; }, formSph);
     var sphBtn = document.getElementById('f_sphere');
@@ -7513,6 +7867,7 @@
           delete t.stagesV2;
         }
         t.resultDescription = g('f_result'); t.reportRequisites = g('f_reqs');
+        if(document.getElementById('f_note')) t.note = g('f_note');
       } else {
         t.note = g('f_note');
       }
@@ -7620,6 +7975,33 @@
     });
   }
 
+  /* v56 (ответ 14 октября): задача полной категории переводится в «Порядок» — у него из полей только «Примечание», поэтому
+     все заполненные поля переходят в примечание строками «Название поля: текст» (своё примечание, если было, — первым),
+     а сами поля очищаются: в «Порядке» их не видно, и задача не должна жить по скрытому сроку */
+  function fieldsToNote(t){
+    var L = [], one = function(s){ return String(s == null ? '' : s).trim(); };
+    var add = function(label, v){ v = one(v); if(v) L.push(label + ': ' + v); };
+    var d2 = function(iso){ var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return m ? m[3] + '.' + m[2] + '.' + m[1] : ''; };
+    var subs = function(arr){ return (arr || []).filter(function(s){ return s && one(s.text); }).map(function(s){ return (s.done ? '✓ ' : '') + one(s.text); }).join('; '); };
+    add('Управляющий', t.manager); add('Исполнитель', t.executor);
+    if(t.type === 'periodic' && (t.scheduledDates || []).length)
+      add('Дни выполнения', t.scheduledDates.slice().sort().map(function(x){ return d2(x) + ((t.datesDone || []).indexOf(x) >= 0 ? ' ✓' : ''); }).join(', '));
+    if(Array.isArray(t.stagesV2) && t.stagesV2.length > 1)
+      t.stagesV2.forEach(function(s, i){ add('Подзадачи, ' + (s.custom && one(s.name) ? one(s.name) : 'Этап ' + (i + 1)), subs(s.items)); });
+    else add('Подзадачи', subs((t.stages || []).concat(Array.isArray(t.stagesV2) && t.stagesV2[0] ? t.stagesV2[0].items || [] : [])));
+    if(t.dueDate && (t.type === 'current' || t.type === 'perspective')){
+      var due = /^\d{4}-\d{2}$/.test(t.dueDate) ? MONTH_NAMES_RU[+t.dueDate.slice(5, 7) - 1] + ' ' + t.dueDate.slice(0, 4) : d2(t.dueDate) + (t.dueTime ? ' ' + t.dueTime : '');
+      add('Срок исполнения', due);
+    }
+    add('Финансы', t.finance); add('Инструменты', t.tools); add('Ресурсы', t.resources);
+    add('Знания, умения, навыки', t.ksa);
+    add('Описание результата', t.resultDescription); add('Реквизиты отчётов', t.reportRequisites);
+    if(L.length) t.note = (one(t.note) ? one(t.note) + '\n\n' : '') + L.join('\n');
+    t.manager = ''; t.executor = ''; t.finance = ''; t.tools = ''; t.resources = ''; t.ksa = '';
+    t.resultDescription = ''; t.reportRequisites = ''; t.stages = []; delete t.stagesV2;
+    t.scheduledDates = []; t.datesDone = []; t.dueDate = null; delete t.dueTime;
+  }
+
   function openMoveSheet(id){
     var t = tasks.find(function(x){ return x.id===id; });
     if(!t) return;
@@ -7628,12 +8010,14 @@
       '<div class="typegrid">' + others.map(function(k){
         return '<button class="typeopt" data-k="' + k + '"><div class="bar" style="background:' + typeColor(k) + '"></div>' +
           '<div class="name">' + esc(TYPES[k].label) + '</div></button>';
-      }).join('') + '</div>';
+      }).join('') + '</div>' +
+      (FULL_TYPES.indexOf(t.type) >= 0 ? '<div class="hint" style="margin-top:10px;">При переводе в «' + esc(TYPES.restore.label) + '» заполненные поля задачи перейдут в «Примечание»</div>' : '');
     openSheet(html);
     sheetEl.querySelectorAll('.typeopt').forEach(function(btn){
       btn.addEventListener('click', function(){
         var k = btn.getAttribute('data-k');
         statLogAdd(t, 'moved', 0, k);            // v51 §1: «переведено в категорию» — a way of finishing; v54.2: added in the new one
+        if(k === 'restore' && FULL_TYPES.indexOf(t.type) >= 0) fieldsToNote(t);   // v56: у «Порядка» только примечание
         t.type = k; t.code = nextCode(k); t.status = 'process';
         if(t.oldCopy) delete t.oldCopy;          // an old version moved to another category: no longer a duplicate
         persistTask(t); closeSheet(); render();
@@ -7878,52 +8262,90 @@
         ctx.textAlign = 'left';
       }
       if (it.ctl === 'group') {                        // a collapsed group: its name and, instead of the buttons, the statistics
-        // the statistics lines from the bottom up; a line too long for the folder breaks between its parts (« · »)
-        const maxW = Rr - L - 2, rows = [];
-        (it.stats || []).forEach((ln, n) => {
-          ctx.font = n === 0 ? `600 12.5px ${UI}` : `500 12px ${UI}`;
-          const parts = ln.split(' · '); let cur = '';
-          parts.forEach(pt => { const tryS = cur ? cur + ' · ' + pt : pt; if (!cur || ctx.measureText(tryS).width <= maxW) cur = tryS; else { rows.push([n, cur + ' ·']); cur = pt; } });
-          rows.push([n, cur]);
-        });
-        const gapL = rows.length > 3 ? 15.5 : 17, y3 = B - 6;
-        if (rows.length <= 3) { ctx.font = `700 11px ${UI}`; ctx.fillStyle = SUB; ctx.fillText('ГРУППА', L, top + 6 + 11); }
-        ctx.font = `700 11.5px ${UI}`;               // with a long «Сроки» the name takes the place of «ГРУППА»
-        const nameY = top + 6 + (rows.length <= 3 ? 30 : 13);
+        const maxW = Rr - L - 2, st = it.stats || [], pxl = v => Math.round(v * dpr) / dpr;
+        // a line too long for the folder breaks between its parts (« · »); line 0 («N задач · …») is a little bolder
+        const wrapRows = (lines, f0, f1) => {
+          const rows = [];
+          lines.forEach((ln, n) => {
+            ctx.font = n === 0 ? `600 ${f0}px ${UI}` : `500 ${f1}px ${UI}`;
+            const parts = String(ln).split(' · '); let cur = '';
+            parts.forEach(pt => { const tryS = cur ? cur + ' · ' + pt : pt; if (!cur || ctx.measureText(tryS).width <= maxW) cur = tryS; else { rows.push([n, cur + ' ·']); cur = pt; } });
+            rows.push([n, cur]);
+          });
+          return rows;
+        };
         // the name stands on a pill in the style of «Свернуть / Развернуть»: the ✓ button's colour, muted, round ends;
-        // 17 px high, on whole pixels of the canvas, the text centred in it
-        const pxl = v => Math.round(v * dpr) / dpr;
-        // v44 §9: several spheres on the screen — the group's sphere stands to the right of the plate, with its colour strip
-        let lab = '', labW = 0;
-        if (it.gsph) { ctx.font = `600 11px ${UI}`; lab = ellip(ctx, it.gsph, maxW * 0.42); labW = ctx.measureText(lab).width + 12; ctx.font = `700 11.5px ${UI}`; }
-        const nm = ellip(ctx, it.name, maxW - 18 - labW), ph = 17, pyT = pxl(nameY - 12.5), pxL = pxl(L - 2), nw = pxl(ctx.measureText(nm).width + 18);
-        // v43 §3: a group with a colour — the plate is of that colour (and the sign dark or white on it), no dot;
-        // a group «по теме» — the plate in the style of «Свернуть / Развернуть», as before
-        if (it.gcol) {
-          ctx.save(); rrect(ctx, pxL, pyT, nw, ph, ph / 2); ctx.fillStyle = it.gcol; ctx.fill();
-          rrect(ctx, pxL + 0.5, pyT + 0.5, nw - 1, ph - 1, (ph - 1) / 2); ctx.globalAlpha *= 0.22; ctx.strokeStyle = '#000'; ctx.lineWidth = 1; ctx.stroke();
-          ctx.restore();
-        } else collapsePlate(ctx, Fc, pxL, pyT, nw, ph);
-        ctx.fillStyle = it.gcol ? (it.gink || '#fff') : plateInk(Fc); ctx.textBaseline = 'middle'; ctx.fillText(nm, pxL + 9, pyT + ph / 2 + 0.5); ctx.textBaseline = 'alphabetic';
-        if (lab) {
-          const lx = pxL + nw + 10, lw = labW - 12;
-          ctx.font = `600 11px ${UI}`; ctx.fillStyle = SUB; ctx.textBaseline = 'middle'; ctx.fillText(lab, lx, pyT + ph / 2 - 1.5); ctx.textBaseline = 'alphabetic';
-          ctx.save(); rrect(ctx, lx, pxl(pyT + ph - 2), Math.max(12, lw), 2, 1); ctx.fillStyle = it.gsc || SUB; ctx.fill(); ctx.restore();
+        // 17 px high, on whole pixels of the canvas, the text centred in it; v44 §9: several spheres on the screen — the
+        // group's sphere stands to the right of the plate, with its colour strip
+        const drawName = pyT => {
           ctx.font = `700 11.5px ${UI}`;
-        }
-        // «N задач · M важных» stands in the middle between the name above and the next line below
-        const k1 = rows.findIndex(r => r[0] > 0), yNext = k1 < 0 ? y3 : y3 - (rows.length - 1 - k1) * gapL;
+          let lab = '', labW = 0;
+          if (it.gsph) { ctx.font = `600 11px ${UI}`; lab = ellip(ctx, it.gsph, maxW * 0.42); labW = ctx.measureText(lab).width + 12; ctx.font = `700 11.5px ${UI}`; }
+          const nm = ellip(ctx, it.name, maxW - 18 - labW), ph = 17, pxL = pxl(L - 2), nw = pxl(ctx.measureText(nm).width + 18);
+          // v43 §3: a group with a colour — the plate is of that colour (and the sign dark or white on it), no dot;
+          // a group «по теме» — the plate in the style of «Свернуть / Развернуть», as before
+          if (it.gcol) {
+            ctx.save(); rrect(ctx, pxL, pyT, nw, ph, ph / 2); ctx.fillStyle = it.gcol; ctx.fill();
+            rrect(ctx, pxL + 0.5, pyT + 0.5, nw - 1, ph - 1, (ph - 1) / 2); ctx.globalAlpha *= 0.22; ctx.strokeStyle = '#000'; ctx.lineWidth = 1; ctx.stroke();
+            ctx.restore();
+          } else collapsePlate(ctx, Fc, pxL, pyT, nw, ph);
+          ctx.fillStyle = it.gcol ? (it.gink || '#fff') : plateInk(Fc); ctx.textBaseline = 'middle'; ctx.fillText(nm, pxL + 9, pyT + ph / 2 + 0.5); ctx.textBaseline = 'alphabetic';
+          if (lab) {
+            const lx = pxL + nw + 10, lw = labW - 12;
+            ctx.font = `600 11px ${UI}`; ctx.fillStyle = SUB; ctx.textBaseline = 'middle'; ctx.fillText(lab, lx, pyT + ph / 2 - 1.5); ctx.textBaseline = 'alphabetic';
+            ctx.save(); rrect(ctx, lx, pxl(pyT + ph - 2), Math.max(12, lw), 2, 1); ctx.fillStyle = it.gsc || SUB; ctx.fill(); ctx.restore();
+          }
+        };
+        // the usual layout: «ГРУППА», the name, the statistics lines from the bottom up and «N задач» in the middle between them —
+        // drawn as before when every line has its own room
+        const rows0 = wrapRows(st, 12.5, 12), gapL = rows0.length > 3 ? 15.5 : 17, y3 = B - 6;
+        const nameY = top + 6 + (rows0.length <= 3 ? 30 : 13), pill0 = pxl(nameY - 12.5);
+        const k1 = rows0.findIndex(r => r[0] > 0), yNext = k1 < 0 ? y3 : y3 - (rows0.length - 1 - k1) * gapL;
         const y0 = Math.round(((nameY + 5) + (yNext - 9)) / 2 + 4.5);
-        rows.forEach((r, k) => {
-          ctx.font = r[0] === 0 ? `600 12.5px ${UI}` : `500 12px ${UI}`; ctx.fillStyle = r[0] === 0 ? INK : SUB;
-          ctx.fillText(ellip(ctx, r[1], maxW), L, r[0] === 0 ? y0 : y3 - (rows.length - 1 - k) * gapL);
-        });
+        const fitsUsual = y0 - 10 >= pill0 + 17 + 2 && (k1 < 0 || yNext - 10 >= y0 + 3) && rows0.filter(r => r[0] === 0).length === 1;
+        if (fitsUsual) {
+          if (rows0.length <= 3) { ctx.font = `700 11px ${UI}`; ctx.fillStyle = SUB; ctx.fillText('ГРУППА', L, top + 6 + 11); }
+          drawName(pill0);
+          rows0.forEach((r, k) => {
+            ctx.font = r[0] === 0 ? `600 12.5px ${UI}` : `500 12px ${UI}`; ctx.fillStyle = r[0] === 0 ? INK : SUB;
+            ctx.fillText(ellip(ctx, r[1], maxW), L, r[0] === 0 ? y0 : y3 - (rows0.length - 1 - k) * gapL);
+          });
+        } else {
+          /* v57 §8.1: the folder is too low (a small screen) — the lines go one under another, never over each other; when they do
+             not fit, in turn: «ГРУППА» goes, the letters get smaller (down to 10 px), the terms are shortened
+             («Сроки: 1 нед · 2 мес · 1 просроч.»), «задачи» and «сроки» merge into one line, the statuses line goes */
+          const avail = B - 2 - (top + 4);
+          const V = [[12, 1, 0, 0, 0], [12, 0, 0, 0, 0], [11, 0, 0, 0, 0], [10, 0, 0, 0, 0], [10, 0, 1, 0, 0], [10, 0, 1, 1, 0], [10, 0, 1, 1, 1]];
+          let pick = null;
+          for (const v of V) {
+            const [fs, hdr, short, merge, drop] = v;
+            let lines = [st[0] || '', short ? (st.short || it.statsShort || st[1] || '') : (st[1] || ''), st[2] || ''];
+            if (merge) lines = [lines[0] + ' · ' + lines[1], lines[2]];
+            if (drop) lines.pop();
+            const rows = wrapRows(lines.filter(Boolean), fs + 0.5, fs), lh = fs + 4.5;
+            const need = (hdr ? 15 : 0) + 17 + 3 + rows.length * lh;
+            pick = { fs, hdr, rows, lh, need };
+            if (need <= avail) break;
+          }
+          let y = top + 4;
+          if (pick.hdr) { ctx.font = `700 11px ${UI}`; ctx.fillStyle = SUB; ctx.fillText('ГРУППА', L, y + 11); y += 15; }
+          const pyT = pxl(y); drawName(pyT); y = pyT + 17 + 3;
+          const extra = Math.max(0, Math.min(5, (avail - pick.need) / (pick.rows.length + 1)));
+          ctx.save(); ctx.beginPath(); ctx.rect(0, 0, Wc, B + 2); ctx.clip();
+          pick.rows.forEach(r => {
+            y += extra;
+            ctx.font = r[0] === 0 ? `600 ${pick.fs + 0.5}px ${UI}` : `500 ${pick.fs}px ${UI}`; ctx.fillStyle = r[0] === 0 ? INK : SUB;
+            ctx.fillText(ellip(ctx, r[1], maxW), L, y + pick.fs + 0.5);
+            y += pick.lh;
+          });
+          ctx.restore();
+        }
         cv._hits = hits; cv._face = { w: Wc, h: Hc };
         return;
       }
       // bottom row: its vertical centre is fixed; the buttons grow from it up and down
       const bcy = B - 12;
-      const SH = 36, BH = 36;                          // all three buttons: same height, same centre
+      const SH = smallScr ? 30 : 36, BH = SH;          // all three buttons: same height, same centre (v57 §8.1: 30 px на маленьком экране)
       const btnTop = bcy - BH / 2;
       // row 1: category and the «ВАЖНО» mark; subtasks done / all (with stages: a strip of one piece per stage) / a date on the right
       let y = top + 6 + 11;
@@ -8191,10 +8613,10 @@
       const fw = Math.round((d.offsetWidth - 8 - 30) * 0.94);
       const sMax = clamp((W - 28) / fw, 1, 1.4);
       const yA = slotYf + clamp(H * 0.045, 28, 44);
-      const fh = clamp((H - yA - 10) / 4.75 - GAP, 84, 220) / sMax;
+      const fh = clamp((H - yA - 10) / foldDiv(idx) - GAP, foldMin(idx), 220) / sMax;
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       const pw = Math.round(fw * sMax * dpr), ph = Math.round(pw * fh / fw);
-      return { pw, ph, dpr, key: pw + 'x' + ph + ':' + fontGen };
+      return { pw, ph, dpr, key: pw + 'x' + ph + ':' + fontGen + (smallScr ? 's' : '') };
     }
     /* a folder's canvas belongs to its item (task, collapsed group, project) — not to its place in the list — so when the
        list changes (a group folds or unfolds, a task is added) the folders on screen keep their canvases and nothing is
@@ -8287,6 +8709,11 @@
     let editT = 0;
     document.addEventListener('focusin', () => { editT = performance.now(); });
     document.addEventListener('focusout', () => { editT = performance.now(); setTimeout(() => { flushLayout(); }, 1650); });
+    /* v57 §8.1: «маленький экран» — ширина до 360 px или видимая высота меньше 700 px (эталон — Galaxy S10e: 360 × ~670) */
+    var smallScr = false;                        // var: виден и функциям рисования папок, объявленным выше
+    const isSmallScr = () => (window.innerWidth || W) <= 360 || (window.innerHeight || H) < 700;
+    // папки списков на маленьком экране ниже: при открытом ящике их помещается не меньше, чем на обычном экране
+    const foldDiv = idx => (smallScr && idx === 1) ? 6.2 : 4.75, foldMin = idx => (smallScr && idx === 1) ? 60 : 84;
     function layout() {
       // the category bar is 1.5 cm tall, so the scene would start between pixels; nudge the scene's
       // origin onto a whole pixel so the cabinet, the pulled-out front and every layer inside land on the grid
@@ -8300,9 +8727,12 @@
       if (!W || !H) return;
       if (kbMode()) { if (stableH && H < stableH) H = stableH; } else stableH = H;
       headerH = TOP_RESERVE;
+      const wasSmall = smallScr; smallScr = isSmallScr();
       const cw = Math.round(Math.min(360, W - 44));
       // cabinet keeps the size it had with three drawers; the drawers share that height
-      let du = clamp(Math.min(Math.round(cw * 0.33), Math.floor((H - headerH - 190) / 3.4)), 70, 130);
+      // v57 §8.1: на маленьком экране ящики могут стать ниже прежней наименьшей высоты (70 → 46)
+      const duMin = smallScr ? 46 : 70;
+      let du = clamp(Math.min(Math.round(cw * 0.33), Math.floor((H - headerH - 190) / 3.4)), duMin, 130);
       const nd = DATA.length, gap = 10;
       const setDu = () => {
         const dh = Math.round((3 * du + 2 * gap - (nd - 1) * gap) / nd);
@@ -8315,9 +8745,16 @@
       /* v42: the switcher of spheres floats over the lower part of the scene; the caption under the cabinet («Задач нет»,
          up to two lines) must stay above it — on a low screen the drawers get lower (down to their least height) */
       const swEl = document.getElementById('sphBar'), appEl0 = root.closest('#app');
-      bottomLimit = (swEl && !swEl.hidden && appEl0) ? swEl.offsetTop - (r.top - appEl0.getBoundingClientRect().top) - 10 : H - 10;
+      const swOn = !!(swEl && !swEl.hidden && appEl0);
+      const limitNow = () => swOn ? swEl.offsetTop - (r.top - appEl0.getBoundingClientRect().top) - 10 : H - 10;
+      if (swOn) swEl.classList.remove('compact');
+      bottomLimit = limitNow();
       const topOf = c => Math.max(-18, (Math.max(headerH + 12, (H - c) / 2 - 6) + 18) / 5 - 18);
-      for (let k = 0; k < 24 && du > 70 && topOf(ch) + ch + 22 + 44 > bottomLimit; k++) { du = Math.max(70, du - 3); ch = setDu(); }
+      // на маленьком экране подпись под тумбой не обязана помещаться: главное — табличка нижнего ящика над переключателем
+      const tail = smallScr ? 6 : 22 + 44;
+      for (let k = 0; k < 30 && du > duMin && topOf(ch) + ch + tail > bottomLimit; k++) { du = Math.max(duMin, du - 3); ch = setDu(); }
+      // и этого мало — переключатель сфер становится ниже (передняя карточка 48 px вместо 58)
+      if (smallScr && swOn && topOf(ch) + ch + tail > bottomLimit) { swEl.classList.add('compact'); bottomLimit = limitNow(); }
       // whole *screen* pixels: the scene itself starts at a fractional offset (the 1.5 cm category bar),
       // so snap the cabinet's absolute position to the device pixel grid, not just its offset in the scene.
       // Then the pulled-out front and the drawer in its slot rasterise identically and nothing jumps on release.
@@ -8333,6 +8770,7 @@
       cab.style.top = cabTop + 'px';
       hint.style.top = (cabTop + ch + 22) + 'px';
       if (geo) { const keep = p; buildGeo(geo.idx); paintAll(); p = clamp(keep, geo.p0, geo.pMax); target = clamp(target, geo.p0, geo.pMax); dirty = true; }
+      if (wasSmall !== smallScr) repaintFolders();
       schedulePrepaint();
     }
 
@@ -8356,7 +8794,7 @@
       const fw = Math.round((trayW0 - 30) * 0.94);
       const sMax = clamp((W - 28) / fw, 1, 1.4);
       const yA = slotYf + clamp(H * 0.045, 28, 44);
-      const fhS = clamp((H - yA - 10) / 4.75 - GAP, 84, 220);
+      const fhS = clamp((H - yA - 10) / foldDiv(idx) - GAP, foldMin(idx), 220);
       const fh = fhS / sMax;
       const S = fhS + GAP;
       const yB = H - fh * sMax * 0.28;
@@ -9064,6 +9502,7 @@
       lastImp = impSig;
       applyAppTheme();
       applyTheme();
+      syncSplash();
       applyTitles();
       DATA.forEach((_, i) => applyFader(i));
       if (!U().nudge) stopNudge(); else if (!touched) startNudge();
@@ -9120,7 +9559,7 @@
     function norm(p){
       return { id: String(p.id), name: String(p.name || '').slice(0, 40), order: isFinite(p.order) ? +p.order : 0,
         createdAt: +p.createdAt || 0, updatedAt: +p.updatedAt || 0, archived: !!p.archived, archivedAt: +p.archivedAt || 0,
-        entries: Array.isArray(p.entries) ? p.entries.filter(function(e){ return e && e.id; }).map(function(e){ var o = { id: String(e.id), title: String(e.title || ''), text: String(e.text || '') }; if(e.imp) o.imp = true; if(e.shr) o.shr = +e.shr || 1; if(e.sav) o.sav = +e.sav || 1; var au = ATT.normAudio(e.audio), im = ATT.normImages(e.images); if(au.length) o.audio = au; if(im.length) o.images = im; return o; }) : [] };
+        entries: Array.isArray(p.entries) ? p.entries.filter(function(e){ return e && e.id; }).map(function(e){ var o = { id: String(e.id), title: String(e.title || ''), text: String(e.text || '') }; if(e.imp) o.imp = true; if(e.shr) o.shr = +e.shr || 1; if(e.sav) o.sav = +e.sav || 1; if(e.rst) o.rst = +e.rst || 1; var au = ATT.normAudio(e.audio), im = ATT.normImages(e.images); if(au.length) o.audio = au; if(im.length) o.images = im; return o; }) : [] };
     }
     function sorted(){ return list.slice().sort(function(a, b){ return (a.order - b.order) || (a.createdAt - b.createdAt); }); }
     function byId(id){ for(var i = 0; i < list.length; i++) if(list[i].id === id) return list[i]; return null; }
@@ -9174,10 +9613,11 @@
       list.push(p); return p;
     }
     function restoreEntries(arr){
-      var touched = [];
+      var touched = [], now = Date.now();
       arr.forEach(function(d){
         var p = ensureList(d);
-        if(!p.entries.some(function(e){ return e.id === d.id; })){ var re = { id: d.id, title: d.title, text: d.text }; if(d.audio) re.audio = d.audio; if(d.images) re.images = d.images; p.entries.push(re); }
+        // v56 §7.5: восстановленная запись — с пометкой «восстановлено» (rst — время), пока её не отредактируют
+        if(!p.entries.some(function(e){ return e.id === d.id; })){ var re = { id: d.id, title: d.title, text: d.text, rst: now }; if(d.audio) re.audio = d.audio; if(d.images) re.images = d.images; p.entries.push(re); }
         if(touched.indexOf(p) < 0) touched.push(p);
       });
       touched.forEach(write);
@@ -9391,7 +9831,7 @@
       }
       busy = true;
       var done = function(){
-        playerStop(); ov.hidden = true; clearFx(); ov.style.paddingTop = ''; ov.style.paddingBottom = ''; ov.style.background = ''; footTop = null;
+        playerStop(); hideUndo(true); ov.hidden = true; clearFx(); ov.style.paddingTop = ''; ov.style.paddingBottom = ''; ov.style.background = ''; footTop = null;
         if(sel) setSelecting(false);
         openState = false; busy = false; cur = null; field = null; openRow = null; g = null; listEl.innerHTML = '';
         if(typeof afterSheetClosed === 'function') afterSheetClosed();
@@ -9411,14 +9851,14 @@
     /* ---------- the list ---------- */
     function rowHTML(e){
       var t = e.title.trim(), x = e.text.trim();
-      return '<div class="prow' + (e.imp ? ' pimp' : '') + (e.shr ? ' pshr' : '') + (e.sav ? ' psav' : '') + (sel && sel[e.id] ? ' sel' : '') + '" data-id="' + esc(e.id) + '">' +
+      return '<div class="prow' + (e.imp ? ' pimp' : '') + (e.shr ? ' pshr' : '') + (e.sav ? ' psav' : '') + (e.rst ? ' prst' : '') + (sel && sel[e.id] ? ' sel' : '') + '" data-id="' + esc(e.id) + '">' +
         '<button type="button" class="pact pact-edit" tabindex="-1">Редактировать</button>' +
         '<button type="button" class="pact pact-del" tabindex="-1">Удалить</button>' +
         '<div class="pcard">' + (t ? '<div class="pc-t">' + esc(t) + '</div>' : '') + (x ? '<div class="pc-x">' + esc(x) + '</div>' : '') + attHTML(e) +
         '<button type="button" class="pshare" aria-label="Поделиться записью" title="Поделиться записью">' + SHARE_ICO + '</button>' +
         '<button type="button" class="psave" aria-label="Сохранить на устройство" title="Сохранить на устройство">' + SAVE_ICO + '</button>' +
         '<button type="button" class="pcopy" aria-label="Копировать запись" title="Копировать запись">' + COPY_ICO + '</button>' +
-        '<span class="pmarks"><span class="pshr-b">' + SHR_MINI + 'отправлено</span><span class="psav-b">' + SAV_MINI + 'сохранено на устройство</span></span></div></div>';
+        '<span class="pmarks"><span class="prst-b">' + RST_MINI + 'восстановлено</span><span class="pshr-b">' + SHR_MINI + 'отправлено</span><span class="psav-b">' + SAV_MINI + 'сохранено на устройство</span></span></div></div>';
     }
     function attHTML(e){
       var a = e.audio || [], im = e.images || [];
@@ -9431,6 +9871,8 @@
     var SAVE_ICO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5"/><path d="M5 12.5v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>';
     var SAV_MINI = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5"/><path d="M5 13v5.5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V13"/></svg>';
     var SHR_MINI = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7.5 8.5L12 4l4.5 4.5"/><path d="M5 13v5.5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V13"/></svg>';
+    // v56 §7.5: «восстановлено» — круговая стрелка
+    var RST_MINI = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.4-5.5"/><path d="M4.5 4.5v4h4"/></svg>';
     var COPY_ICO = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2.2"/><path d="M15.5 8.5V6.7a2.2 2.2 0 0 0-2.2-2.2H6.7a2.2 2.2 0 0 0-2.2 2.2v6.6a2.2 2.2 0 0 0 2.2 2.2h1.8"/></svg>';
     var DONE_ICO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.4 4.4L19 7.5"/></svg>';
     var FAIL_ICO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>';
@@ -9518,8 +9960,9 @@
         [['images', 'jpg', 'image/jpeg'], ['audio', 'm4a', 'audio/mp4']].forEach(function(k){
           var arr = (e[k[0]] || []).filter(function(x){ return ATT.has(e.id, x.file); });
           arr.forEach(function(x, i){
-            var nm = uniq(base + (arr.length > 1 ? ' (' + (i + 1) + ')' : '') + '.' + k[1]);
-            files.push({ e: e.id, f: x.file, n: nm, m: k[2] });
+            var ext = k[0] === 'audio' ? ATT.extOf(x.file, k[1]) : k[1];          // v55: a sound from another app keeps its format
+            var nm = uniq(base + (arr.length > 1 ? ' (' + (i + 1) + ')' : '') + '.' + ext);
+            files.push({ e: e.id, f: x.file, n: nm, m: k[0] === 'audio' ? ATT.audioType(x) : k[2] });
             (names[e.id] = names[e.id] || []).push(nm);
           });
         });
@@ -9641,6 +10084,8 @@
       go.textContent = n ? 'Поделиться · ' + n : 'Поделиться'; go.disabled = !n;
       var sv = document.getElementById('projSelSave');
       sv.textContent = n ? 'Сохранить · ' + n : 'Сохранить'; sv.disabled = !n;
+      var mv = document.getElementById('projSelMove');                // v55 §6.2
+      mv.textContent = n ? 'Перенести · ' + n : 'Перенести'; mv.disabled = !n || !otherLists().length;
       document.getElementById('projSelAll').textContent = all ? 'Снять' : 'Все';
       kickerEl.textContent = n ? 'Выбрано: ' + n : 'Выберите записи';
     }
@@ -9725,7 +10170,11 @@
       var h = '';
       fl.audio.forEach(function(x){ h += audioStripHTML(fl.eid, x, true); });
       h += imgsHTML(fl.eid, fl.images, true);
-      if(fl.rec) h += '<div class="pa-rec"><i></i><b class="rec-t">' + fmtDur(Date.now() - fl.rec.t0) + '</b><button type="button" class="pf-recstop">Стоп</button></div>';
+      if(fl.waitShow && fl.waitN > 0){                // v57 §8.7: песочные часы на месте каждой ещё не готовой картинки
+        var hw = ''; for(var wi = 0; wi < fl.waitN; wi++) hw += '<div class="pimg pimg-wait" role="status" aria-label="Картинка готовится">' + HG_SVG + '</div>';
+        h += '<div class="pi-list">' + hw + '</div>';
+      }
+      if(fl.rec) h += '<div class="pa-rec"><i></i><b class="rec-t">' + fmtDur(Date.now() - fl.rec.t0) + '</b>' + recWaveHTML(fl.rec) + '<button type="button" class="pf-recstop">Стоп</button></div>';
       else h += '<div class="pa-bar"><button type="button" class="pa-btn pf-mic" aria-label="Записать голос" title="Записать голос">' + MIC_ICO + '</button><button type="button" class="pa-btn pf-pic" aria-label="Добавить картинку" title="Добавить картинку">' + PIC_ICO + '</button></div>';
       if(fl.hint) h += '<div class="pa-note">' + esc(fl.hint) + '</div>';
       return h;
@@ -9746,6 +10195,35 @@
       (f.added || []).forEach(function(file){ ATT.del(f.eid, file); });
       f.added = [];
     }
+    /* v56 §7.3: волна во время записи — столбики громкости появляются справа и уходят влево (шкала дорожки после записи:
+       дБ и кривая ^1,5, только пределы постоянные — запись ещё идёт); при «уменьшении движения» — один столбик-индикатор */
+    var REC_BARS = 90;
+    function recBarH(lv){
+      var db = 20 * Math.log(Math.max(lv, 1e-6)) / Math.LN10, k = Math.max(0, Math.min(1, (db + 48) / 48));
+      return Math.max(8, Math.round(Math.pow(k, 1.5) * 100));
+    }
+    function recStill(){ return matchMedia('(prefers-reduced-motion: reduce)').matches; }
+    function recWaveHTML(r){
+      var s = r.samples || [];
+      if(recStill()) return '<span class="rec-wave still" aria-hidden="true"><i style="height:' + recBarH(s.length ? s[s.length - 1] : 0) + '%"></i></span>';
+      return '<span class="rec-wave" aria-hidden="true"><span>' + s.slice(-REC_BARS).map(function(v){ return '<i style="height:' + recBarH(v) + '%"></i>'; }).join('') + '</span></span>';
+    }
+    function recWavePush(fl, lv){
+      var w = fl.el.querySelector('.rec-wave'); if(!w) return;
+      if(w.classList.contains('still')){ var b0 = w.firstElementChild; if(b0) b0.style.height = recBarH(lv) + '%'; return; }
+      var row = w.firstElementChild; if(!row) return;
+      var bar = document.createElement('i'); bar.style.height = recBarH(lv) + '%'; row.appendChild(bar);
+      while(row.childElementCount > REC_BARS) row.removeChild(row.firstElementChild);
+      // плавный бег: новый столбик сдвигает ряд на шаг, ряд за 0,1 с доезжает на место
+      if(row.animate) row.animate([{ transform: 'translateX(' + (bar.offsetWidth + 2) + 'px)' }, { transform: 'none' }], { duration: 100, easing: 'linear' });
+    }
+    /* v57 §8.7: пока картинки сжимаются — песочные часы (только если ждать дольше 0,3 с, чтобы не мелькали) */
+    function waitBegin(fl, n){
+      fl.waitN = n; fl.waitShow = false; clearTimeout(fl.waitT);
+      if(n > 0) fl.waitT = setTimeout(function(){ if(fl.waitN > 0 && field === fl && !fl.closing){ fl.waitShow = true; renderAtt(fl); } }, 300);
+    }
+    function waitStep(fl){ if(fl.waitN > 0) fl.waitN--; }
+    function waitEnd(fl){ fl.waitN = 0; fl.waitShow = false; clearTimeout(fl.waitT); }
     function startRec(fl){
       if(fl.rec || fl.work) return;
       var name = 'a' + uid() + '.m4a';
@@ -9758,7 +10236,7 @@
         fl.rec.timer = setInterval(function(){
           var r0 = fl.rec; if(!r0) return;
           var lv = 0; try{ lv = +A.recLevel() || 0; }catch(_){}
-          r0.samples.push(lv);
+          r0.samples.push(lv); recWavePush(fl, lv);
           var ms = Date.now() - r0.t0, te = fl.el.querySelector('.rec-t'); if(te) te.textContent = fmtDur(ms);
           if(!warned && ms >= ATT.MAX_MS - 60000){ warned = true; setHint(fl, 'Осталась минута: запись остановится сама'); }
           if(ms >= ATT.MAX_MS){ stopRec(fl, true); attChanged(fl); }
@@ -9792,7 +10270,8 @@
       inp.addEventListener('change', function(){
         var fs = Array.prototype.slice.call(inp.files || []); inp.remove();
         if(!fs.length || field !== fl) return;
-        fl.work = true; fl.hint = 'Добавляю картинки…'; renderAtt(fl);
+        fl.work = true; fl.hint = 'Добавляю картинки…';
+        waitBegin(fl, Math.min(fs.length, Math.max(0, ATT.MAX_IMG - fl.images.length))); renderAtt(fl);
         var over = 0, bad = 0, nospace = 0, chain = Promise.resolve();
         fs.forEach(function(file){
           chain = chain.then(function(){
@@ -9801,14 +10280,17 @@
             return ATT.compress(file).then(function(c){
               var name = 'i' + uid() + '.jpg';
               return ATT.write(fl.eid, name, c.blob).then(function(ok){
+                waitStep(fl);
                 if(!ok){ nospace++; return; }
                 if(field !== fl || fl.closing){ ATT.del(fl.eid, name); return; }
                 fl.images.push({ id: uid(), file: name, w: c.w, h: c.h, size: c.blob.size }); fl.added.push(name);
+                renderAtt(fl);
               });
-            }, function(){ bad++; });
+            }, function(){ bad++; waitStep(fl); });
           });
         });
         chain.then(function(){
+          waitEnd(fl);
           fl.work = false; if(field !== fl || fl.closing) return;
           fl.hint = nospace ? 'Не хватает места на устройстве' : over ? 'Не больше ' + ATT.MAX_IMG + ' картинок в записи' : bad ? 'Не все картинки удалось открыть' : '';
           attChanged(fl);
@@ -9948,7 +10430,7 @@
       f.closing = true; clearTimeout(f.dt); entryDraftFn = null; draftDel(DRAFT_ENTRY);
       f.removed.forEach(function(file){ ATT.del(f.eid, file); });
       var put = function(o){ if(f.audio.length) o.audio = f.audio; else delete o.audio; if(f.images.length) o.images = f.images; else delete o.images; };
-      if(f.id){ var i = -1; cur.entries.forEach(function(e, k){ if(e.id === f.id) i = k; }); if(i >= 0){ cur.entries[i].title = t; cur.entries[i].text = x; delete cur.entries[i].shr; delete cur.entries[i].sav; put(cur.entries[i]); } }
+      if(f.id){ var i = -1; cur.entries.forEach(function(e, k){ if(e.id === f.id) i = k; }); if(i >= 0){ cur.entries[i].title = t; cur.entries[i].text = x; delete cur.entries[i].shr; delete cur.entries[i].sav; delete cur.entries[i].rst; put(cur.entries[i]); } }
       else { var ne = { id: f.eid, title: t, text: x }; put(ne); cur.entries.push(ne); }
       write(cur);
       if(quiet){ field = null; return; }
@@ -10064,7 +10546,7 @@
       if(openRow && openRow !== row) closeSwipe(false);
       if(!row || field) return;
       var card = row.querySelector('.pcard');
-      g = { id: ev.pointerId, row: row, card: card, x0: ev.clientX, y0: ev.clientY, y: ev.clientY, mode: '?',
+      g = { id: ev.pointerId, row: row, card: card, x0: ev.clientX, y0: ev.clientY, y: ev.clientY, x: ev.clientX, mode: '?',
             base: openRow === row ? (row.classList.contains('open-l') ? -REV : REV) : 0, off: 0 };
       g.off = g.base;
       g.timer = setTimeout(function(){ if(g && g.mode === '?' && !g.base) startDrag(); }, 450);
@@ -10074,7 +10556,7 @@
     listEl.addEventListener('pointermove', function(ev){
       if(!g || ev.pointerId !== g.id) return;
       var dx = ev.clientX - g.x0, dy = ev.clientY - g.y0;
-      g.y = ev.clientY;
+      g.y = ev.clientY; g.x = ev.clientX;
       if(g.mode === '?'){
         if(Math.hypot(dx, dy) < 8) return;
         clearTimeout(g.timer);
@@ -10146,11 +10628,13 @@
       });
       s.rows.forEach(function(r){ if(r !== s.row) r.classList.add('shift'); });
       s.row.classList.add('lift');
+      ribOpen(s);                                    // v55 §6.2: «Перенести в список» at the top of the window
       dragMove();
       s.raf = requestAnimationFrame(autoScroll);
     }
     function dragMove(){
       var s = g; if(!s || s.mode !== 'drag') return;
+      if(ribHit(s)) return;                          // v55 §6.2: over the ribbon — a list is being chosen, the order waits
       s.dy = s.y - s.y0 + (listEl.scrollTop - s.scroll0);
       var minDy = -s.tops[s.i0], maxDy = (s.tops[s.rows.length - 1] + s.hs[s.rows.length - 1]) - (s.tops[s.i0] + s.hs[s.i0]);
       s.dy = clamp(s.dy, minDy - 12, maxDy + 12);
@@ -10170,6 +10654,17 @@
     function autoScroll(){
       var s = g; if(!s || s.mode !== 'drag') return;
       var lr = listEl.getBoundingClientRect(), edge = 56, v = 0;
+      // v55 §6.2: over the ribbon its strip scrolls by itself at its ends; the list's own upper edge is under the ribbon
+      if(s.rib){
+        var rr = s.rib.getBoundingClientRect();
+        if(s.y < rr.bottom + 6){
+          var sr = s.strip.getBoundingClientRect(), h = 0, E2 = 48;
+          if(s.x < sr.left + E2) h = -Math.ceil((sr.left + E2 - s.x) / 4); else if(s.x > sr.right - E2) h = Math.ceil((s.x - (sr.right - E2)) / 4);
+          if(h){ var b0 = s.strip.scrollLeft; s.strip.scrollLeft += h; if(s.strip.scrollLeft !== b0) ribHit(s); }
+          s.raf = requestAnimationFrame(autoScroll); return;
+        }
+        lr = { top: rr.bottom, bottom: lr.bottom };
+      }
       if(s.y < lr.top + edge) v = -Math.ceil((lr.top + edge - s.y) / 5);
       else if(s.y > lr.bottom - edge) v = Math.ceil((s.y - (lr.bottom - edge)) / 5);
       if(v){ var before = listEl.scrollTop; listEl.scrollTop += v; if(listEl.scrollTop !== before) dragMove(); }
@@ -10177,6 +10672,9 @@
     }
     function dragEnd(){
       var s = g; g = null; cancelAnimationFrame(s.raf);
+      var dst = s.rib && s.hot ? byId(s.hot.getAttribute('data-id')) : null;
+      ribClose(s);
+      if(dst && !dst.archived){ dropMove(s, dst); return; }   // v55 §6.2: released over a list's name — the record goes there
       var i0 = s.i0, to = s.to;
       var fin = to > i0 ? (s.tops[to] + s.hs[to]) - (s.tops[i0] + s.hs[i0]) : to < i0 ? s.tops[to] - s.tops[i0] : 0;
       busy = true;
@@ -10392,6 +10890,217 @@
       }, reduce ? 20 : 210);
     }
 
+
+    /* ---------- v55 §6.2: a record moved to another list ----------
+       Held, a record folds to one line and follows the finger (as before); meanwhile a ribbon «Перенести в список» with the
+       names of the other lists comes down at the top of the window (it scrolls by itself at its ends). Released over a
+       name, the record goes to the top of that list and this list closes up; «Перенесено в «…»» with «Вернуть» for 5 s.
+       Released below the ribbon — the usual change of the order. In the choosing mode «Перенести · N» moves the chosen
+       records at once. A move is not a deletion: the record keeps its attachments (they lie by the record's id) and its marks. */
+    function otherLists(){ return activeSorted().filter(function(p){ return p !== cur; }); }
+    function moveEntries(src, ids, dst){
+      if(!src || !dst || src === dst) return null;
+      var moved = src.entries.filter(function(e){ return ids[e.id]; });
+      if(!moved.length) return null;
+      var pos = moved.map(function(e){ return src.entries.indexOf(e); });
+      dst.entries = moved.concat(dst.entries.filter(function(e){ return !ids[e.id]; }));   // first into the new list (at its top) …
+      write(dst);
+      try{ src.entries = src.entries.filter(function(e){ return !ids[e.id]; }); write(src); }   // … then off the old one
+      catch(err){                                     // the second step failed: the records go back where they were
+        dst.entries = dst.entries.filter(function(e){ return !ids[e.id]; }); write(dst);
+        console.error('move failed', err); return null;
+      }
+      return { src: src, dst: dst, moved: moved, pos: pos };
+    }
+    function undoMove(m){
+      var ids = {}; m.moved.forEach(function(e){ ids[e.id] = 1; });
+      m.dst.entries = m.dst.entries.filter(function(e){ return !ids[e.id]; }); write(m.dst);
+      m.src.entries = m.src.entries.filter(function(e){ return !ids[e.id]; });
+      m.moved.forEach(function(e, k){ m.src.entries.splice(Math.min(m.pos[k], m.src.entries.length), 0, e); });
+      write(m.src);
+      if(openState && cur === m.src && !field) flipRender();
+    }
+    /* the list drawn again, the records gliding from where they were to their new places (the new ones fade in) */
+    function flipSnap(){ var was = {}; listEl.querySelectorAll('.prow').forEach(function(r){ was[r.dataset.id] = r.getBoundingClientRect().top; }); return was; }
+    function flipRender(was0, rendered){
+      var was = was0 || flipSnap();
+      if(!rendered){ var st = listEl.scrollTop; renderList(); listEl.scrollTop = st; }
+      if(reduce) return;
+      listEl.querySelectorAll('.prow').forEach(function(r){
+        var o = was[r.dataset.id];
+        if(o == null){ r.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 240, easing: 'ease-out' }); return; }
+        var d = o - r.getBoundingClientRect().top;
+        if(Math.abs(d) > 1) r.animate([{ transform: 'translateY(' + d + 'px)' }, { transform: 'translateY(0)' }], { duration: 280, easing: FLIP_EASE });
+      });
+    }
+    var undoEl = null, undoT = 0;
+    function showUndo(m){
+      hideUndo(true);
+      var n = m.moved.length, el = undoEl = document.createElement('div');
+      el.className = 'pundo'; el.setAttribute('role', 'status');
+      el.innerHTML = '<span>' + (n > 1 ? 'Перенесено ' + n + ' ' + pl(n, ['запись', 'записи', 'записей']) + ' в «' : 'Перенесено в «') + esc(m.dst.name || 'Без названия') + '»</span>' +
+        '<button type="button" class="pundo-b">Вернуть</button>';
+      el.style.bottom = (panel.querySelector('.pwin-foot').offsetHeight + 10) + 'px';
+      panel.appendChild(el);
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){ if(undoEl === el) el.classList.add('in'); }); });
+      el.querySelector('.pundo-b').addEventListener('click', function(){ if(busy || field || g) return; hideUndo(); undoMove(m); });
+      undoT = setTimeout(function(){ if(undoEl === el) hideUndo(); }, 5000);
+    }
+    function hideUndo(now){
+      clearTimeout(undoT); var el = undoEl; undoEl = null; if(!el) return;
+      if(now || reduce){ el.remove(); return; }
+      el.classList.remove('in'); setTimeout(function(){ el.remove(); }, 240);
+    }
+    /* the ribbon: its own background — the material of the chosen button of the category switch (taken from the top bar,
+       where the theme sets it), so it stands out from the window; a light shade under it */
+    function ribOpen(s){
+      var others = otherLists(); if(!others.length) return;
+      var el = document.createElement('div'); el.className = 'pmove';
+      el.innerHTML = '<div class="pm-t">Перенести в список</div><div class="pm-strip">' + others.map(function(p){
+        return '<span class="pm-pill" data-id="' + esc(p.id) + '">' + esc(p.name || 'Без названия') + '</span>'; }).join('') + '</div>';
+      try{
+        var cs = getComputedStyle(document.querySelector('#app > .topbar'));
+        [['--glass-bg', '--pm-bg'], ['--glass-border', '--pm-border'], ['--glass-shadow', '--pm-shadow']].forEach(function(k){ var v = cs.getPropertyValue(k[0]).trim(); if(v) el.style.setProperty(k[1], v); });
+      }catch(_){}
+      el.style.top = listEl.offsetTop + 'px';
+      panel.appendChild(el);
+      s.rib = el; s.strip = el.querySelector('.pm-strip'); s.hot = null;
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){ if(s.rib === el) el.classList.add('in'); }); });
+    }
+    function ribClose(s){
+      var el = s.rib; if(!el) return; s.rib = null;
+      el.classList.remove('in', 'over');
+      setTimeout(function(){ el.remove(); }, reduce ? 0 : 260);
+    }
+    // is the finger over the ribbon? The name under it (by the finger's x) is lit
+    function ribHit(s){
+      if(!s.rib) return false;
+      var r = s.rib.getBoundingClientRect(), over = s.y < r.bottom + 6, hot = null;
+      if(over) Array.prototype.forEach.call(s.rib.querySelectorAll('.pm-pill'), function(b){ var q = b.getBoundingClientRect(); if(s.x >= q.left - 4 && s.x <= q.right + 4) hot = b; });
+      if(hot !== s.hot){ if(s.hot) s.hot.classList.remove('on'); s.hot = hot; if(hot){ hot.classList.add('on'); kart.haptic(); } }
+      if(s.rib.classList.contains('over') !== over) s.rib.classList.toggle('over', over);
+      return over;
+    }
+    function dropMove(s, dst){
+      busy = true;
+      var e = cur.entries[s.i0], row = s.row, t0 = row.style.transform || 'translateY(0px)';
+      var a = row.animate([{ opacity: 1, transform: t0 + ' scale(1)' }, { opacity: 0, transform: t0 + ' translateY(-18px) scale(.86)' }],
+                          { duration: reduce ? 1 : 200, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' });
+      a.finished.catch(function(){}).then(function(){
+        var ids = {}; if(e) ids[e.id] = 1;
+        var m = e ? moveEntries(cur, ids, dst) : null;
+        busy = false;
+        flipRender();                                // the list closes up after the record
+        if(m) showUndo(m);
+      });
+    }
+    /* «Перенести · N» in the choosing mode */
+    function moveChosen(){
+      if(!sel || !cur || busy || field) return;
+      var ids = {}; Object.keys(sel).forEach(function(id){ ids[id] = 1; });
+      if(!Object.keys(ids).length) return;
+      var src = cur;
+      openListPick({ title: 'Перенести · ' + Object.keys(ids).length, sub: 'В какой список перенести записи', lists: otherLists(), allowNew: true,
+        pick: function(dst){
+          if(!openState || cur !== src) return;
+          var was = flipSnap();
+          var m = moveEntries(src, ids, dst);
+          if(!m) return;
+          setSelecting(false);                       // draws the list again
+          flipRender(was, true); showUndo(m);
+        } });
+    }
+    document.getElementById('projSelMove').addEventListener('click', moveChosen);
+
+    /* ---------- v55 §6.1: «Поделиться → Планировщик»: what came from another app becomes a record of list p ----------
+       The window of the list opens with the form of a new record: the subject (of a letter, of a page) as its title, the text
+       as its text. The pictures are made smaller as when added from the gallery (up to 30 in a record), the sound is moved as
+       it is (up to 50 MB; a format the app cannot play is kept with a note). Then the record is saved as usual. */
+    function newList(name){
+      var mx = list.reduce(function(m, x){ return Math.max(m, x.order); }, -1);
+      var p = { id: uid(), name: String(name).trim().slice(0, 40) || 'Без названия', order: mx + 1, entries: [], createdAt: Date.now() };
+      list.push(p); write(p); return p;
+    }
+    function audioMeta(src){
+      return new Promise(function(res){
+        var a = new Audio(), done = false, fin = function(v){ if(done) return; done = true; try{ a.removeAttribute('src'); a.load(); }catch(_){} res(v); };
+        a.preload = 'metadata';
+        a.addEventListener('loadedmetadata', function(){ var d = a.duration; fin(isFinite(d) && d > 0 ? Math.round(d * 1000) : 0); });
+        a.addEventListener('error', function(){ fin(0); });
+        setTimeout(function(){ fin(0); }, 6000);
+        a.src = src;
+      });
+    }
+    function fromIncoming(p, inc){
+      if(!p || p.archived) return false;
+      if(field) return false;
+      if(orderOpen){ oov.hidden = true; clearFx(opanel); orderOpen = false; obusy = false; og = null; olist.innerHTML = ''; }
+      if(openState && cur !== p) closeWin(true);
+      if(sel) setSelecting(false);
+      if(!openState) openWin(p);
+      var n = 0;
+      (function wait(){
+        if(busy && ++n < 80){ setTimeout(wait, 100); return; }
+        if(field || !openState || cur !== p) return;
+        openField(null, { eid: uid(), title: String(inc.subject || '').slice(0, 200), text: String(inc.text || ''), audio: [], images: [], added: [] });
+        var fl = field; if(!fl) return;
+        var files = (inc.files || []).filter(function(f){ return f && f.file && (f.kind === 'image' || f.kind === 'audio'); });
+        var big = +inc.big || 0, bigMsg = big ? (big === 1 ? 'Один файл больше 50 МБ — не добавлен' : 'Файлов больше 50 МБ: ' + big + ' — не добавлены') : '';
+        var finish = function(msg){
+          incomingDone(inc.id); waitEnd(fl);
+          fl.work = false; if(field !== fl || fl.closing) return;
+          fl.hint = msg || ''; attChanged(fl);
+          if(fl.hint){ var hh = fl.hint; clearTimeout(fl.ht); fl.ht = setTimeout(function(){ if(field === fl && fl.hint === hh){ fl.hint = ''; renderAtt(fl); } }, 5200); }
+        };
+        if(!files.length){ finish(bigMsg); return; }
+        if(!ATT.ok){ finish('Вложения добавляются только в приложении'); return; }
+        fl.work = true; fl.hint = 'Добавляю вложения…';
+        waitBegin(fl, Math.min(ATT.MAX_IMG, files.filter(function(f){ return f.kind === 'image'; }).length)); renderAtt(fl);
+        var over = 0, bad = 0, nospace = 0, chain = Promise.resolve(), A = window.AndroidBridge;
+        files.forEach(function(f){
+          chain = chain.then(function(){
+            if(field !== fl || fl.closing) return;
+            var src = location.origin + '/incoming/' + encodeURIComponent(inc.id) + '/' + encodeURIComponent(f.file);
+            if(f.kind === 'image'){
+              if(fl.images.length >= ATT.MAX_IMG){ over++; return; }
+              return fetch(src).then(function(r){ if(!r.ok) throw new Error('read'); return r.blob(); })
+                .then(function(b){ return ATT.compress(b.type ? b : new Blob([b], { type: f.mime || 'image/jpeg' })); })
+                .then(function(c){
+                  var name = 'i' + uid() + '.jpg';
+                  return ATT.write(fl.eid, name, c.blob).then(function(ok){
+                    waitStep(fl);
+                    if(!ok){ nospace++; return; }
+                    if(field !== fl || fl.closing){ ATT.del(fl.eid, name); return; }
+                    fl.images.push({ id: uid(), file: name, w: c.w, h: c.h, size: c.blob.size }); fl.added.push(name);
+                    renderAtt(fl);
+                  });
+                }).catch(function(){ bad++; waitStep(fl); });
+            }
+            var ax = { id: uid(), file: 'a' + uid() + '.' + ATT.extOf(f.file, 'm4a'), dur: 0, size: +f.size || 0, wave: [], mime: f.mime, name: f.name };
+            ax = ATT.normAudio([ax])[0];
+            return (ATT.playable(ax) ? audioMeta(src) : Promise.resolve(0)).then(function(dur){
+              if(field !== fl || fl.closing) return;
+              if(ATT.free() < ax.size + 8 * 1024 * 1024){ nospace++; return; }
+              var ok = false; try{ ok = !!A.incomingMove(inc.id, f.file, fl.eid, ax.file); }catch(_){}
+              if(!ok){ bad++; return; }
+              ax.dur = dur;
+              fl.audio.push(ax); fl.added.push(ax.file);
+              renderAtt(fl);
+              if(ATT.playable(ax)){
+                var wp = ATT.waveOfFile(fl.eid, ax.file, ax.size);
+                if(wp) wp.then(function(w){ if(w && w.length){ ax.wave = w; if(field === fl && !fl.closing){ renderAtt(fl); if(fl.save) fl.save(); } } });
+              }
+            });
+          });
+        });
+        chain.then(function(){
+          finish(nospace ? 'Не хватает места на устройстве' : over ? 'Не больше ' + ATT.MAX_IMG + ' картинок в записи — остальные не добавлены'
+            : bad ? 'Не все вложения удалось открыть' : bigMsg);
+        });
+      })();
+      return true;
+    }
+
     /* ---------- backup: «Экспорт» / «Импорт» in «Параметры» ---------- */
     function exportData(){ return sorted().map(clone); }
     function exportDeleted(){ return dels.map(clone); }
@@ -10436,6 +11145,7 @@
     }
     var shownDel = null;
     function openDeleted(listId){
+      playerStop();                                // v56 §7.4: окно перерисовывается — голос, который играл, останавливается
       var es = dels.filter(function(d){ return d.listId === listId; }).sort(function(a, b){ return b.deletedAt - a.deletedAt; });
       if(!es.length){ shownDel = null; if(!overlay.hidden) closeSheet(); return; }
       shownDel = listId;
@@ -10443,13 +11153,29 @@
       var html = '<h2>' + esc(name) + '</h2><div class="sheet-sub">' + (gone ? 'Список удалён. ' : '') + es.length + ' ' + pl(es.length, ['запись', 'записи', 'записей']) + ' в ящике.</div>';
       if(gone) html += '<div class="sheet-actions" style="margin:0 0 12px"><button type="button" class="btn btn-secondary" id="dlResAll">Восстановить список</button><button type="button" class="btn btn-secondary" id="dlKillAll">Удалить навсегда</button></div>';
       html += '<div class="dlist">' + es.map(function(d){
-        return '<div class="dcard" data-id="' + esc(d.id) + '"><div class="dt">' + esc(d.title.trim() || 'Без заголовка') + '</div>' +
-          (d.text.trim() ? '<div class="dx">' + esc(d.text) + '</div>' : '') +
-          ((d.audio || d.images) ? '<div class="dm">Вложения: ' + [(d.images ? 'картинки — ' + d.images.length : ''), (d.audio ? 'голос — ' + d.audio.length : '')].filter(Boolean).join(', ') + '</div>' : '') +
+        var dtt = d.title.trim(), dxx = d.text.trim();
+        return '<div class="dcard" data-id="' + esc(d.id) + '">' + (dtt || !(dxx || d.audio || d.images) ? '<div class="dt">' + esc(dtt || 'Без заголовка') + '</div>' : '') +
+          (dxx ? '<div class="dx">' + esc(dxx) + '</div>' : '') + attHTML(d) +
           '<div class="dm">Удалена ' + fmtDay(d.deletedAt) + ' · удалится через ' + daysLeft(d) + ' ' + delDaysWord(daysLeft(d)) + '</div>' +
           '<div class="dact"><button type="button" class="btn btn-secondary" data-a="res">Восстановить</button><button type="button" class="btn btn-secondary" data-a="del">Удалить навсегда</button></div></div>';
       }).join('') + '</div>';
       openSheet(html);
+      // v56 §7.4: вложения удалённых записей — как в списке: картинки, голосовые с воспроизведением и перемоткой
+      var dl = sheetEl.querySelector('.dlist');
+      hydrateAtt(dl);
+      sheetOnClose = playerStop;
+      dl.addEventListener('click', function(ev){
+        if(Date.now() - PL.scrubEnd < 400) return;
+        var strip = ev.target.closest('.pa[data-f]'); if(!strip) return;
+        var wv = ev.target.closest('.pa-wave'), rr = -1;
+        if(wv){ var wr = wv.getBoundingClientRect(); rr = wr.width > 0 ? Math.max(0, Math.min(1, (ev.clientX - wr.left) / wr.width)) : -1; }
+        playerTap(strip, rr);
+      });
+      dl.addEventListener('pointerdown', function(ev){
+        var wv0 = ev.target.closest('.pa-wave'), st0 = wv0 && wv0.closest('.pa[data-f]');
+        if(st0 && playerIsPlaying(st0)) playerScrub(ev, wv0, st0);
+      });
+      dl.addEventListener('touchmove', function(ev){ if(PL.scrub && ev.cancelable) ev.preventDefault(); }, { passive: false });
       var by = function(id){ for(var i = 0; i < es.length; i++) if(es[i].id === id) return es[i]; return null; };
       sheetEl.querySelectorAll('.dcard .dact button').forEach(function(b){
         b.addEventListener('click', function(){
@@ -10547,6 +11273,8 @@
     return { tapFolder: tapFolder, setMode: setMode, isOpen: function(){ return openState || orderOpen; }, exportData: exportData, importData: importData, mediaList: mediaList,
              exportDeleted: exportDeleted, importDeleted: importDeleted, countOlder: countOlder, purge: purge, onSettings: function(){ purge(); if(repMode) pushFolders(); },
              isLocked: function(){ return repMode && delLockActive(); }, askUnlock: askUnlock,
+             lists: function(){ return activeSorted(); }, byId: byId, newList: newList, fromIncoming: fromIncoming,   // v55 §6.1
+             busyField: function(){ return !!field; },
              fx: { play: play, hideBehind: hideBehind, clearFx: clearFx } };   // the window of spheres opens with the same effect
   }
 
@@ -10759,10 +11487,9 @@
       html += sec('Название', '<input type="text" class="scfg-name" maxlength="40" enterkeyhint="done" autocomplete="off" aria-label="Название сферы">');
       html += sec('Цвет', '<div class="scols">' + SPH_COLORS.map(function(c){
         return '<button type="button" class="scol' + (d.color === c ? ' on' : '') + '" data-c="' + c + '" style="--gc:' + c + '" aria-label="Цвет ' + c + '"><i></i></button>';
-      }).join('') + '</div>', null, 'Цвет сферы — в этом окне, в окне выбора сферы для новой задачи и на её табличке. На папках задач метки сферы нет.');
+      }).join('') + customSwHTML('scol', SPH_COLORS.indexOf(d.color) < 0, d.color, ' data-cx="1"') + '</div>', null, 'Цвет сферы — в этом окне, в окне выбора сферы для новой задачи и на её табличке. На папках задач метки сферы нет.');
       html += '<div id="scDays"></div><div id="scHours"></div>';
       if(!d.main) html += '<div id="scPause"></div>';
-      html += '<div id="scTheme"></div>';
       html += sec('Метка приоритета', '<input type="text" class="scfg-imp" maxlength="14" enterkeyhint="done" autocomplete="off" aria-label="Метка приоритета сферы">', null,
         'Своё слово на папке важной задачи этой сферы.');
       html += '<div id="scStaff"></div>';
@@ -10772,17 +11499,28 @@
       ni.value = d.name || '';
       ni.addEventListener('input', function(){ d.name = ni.value; ctitle.textContent = ni.value.trim() || (cfg.isNew ? 'Новая сфера' : 'Без названия'); });
       ni.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); ni.blur(); } });
-      cbody.querySelectorAll('.scol').forEach(function(b){
+      var cxb = cbody.querySelector('.scol[data-cx]');
+      if(cxb) cxb.addEventListener('click', function(){              // v57 §8.4: «Свой цвет» сферы
+        openColorPick({ title: 'Свой цвет сферы', color: d.color,
+          sample: function(c){ return '<span style="background:' + c + '"></span><b style="margin-left:12px;font:600 15px var(--font-body);color:var(--text)">' + esc(d.name || 'Сфера') + '</b>'; },
+          pick: function(c){
+            d.color = c;
+            cbody.querySelectorAll('.scol').forEach(function(x){ x.classList.toggle('on', x === cxb); });
+            cxb.style.setProperty('--gc', c); paintScale();
+          } });
+      });
+      cbody.querySelectorAll('.scol[data-c]').forEach(function(b){
         b.addEventListener('click', function(){
           d.color = b.getAttribute('data-c');
           cbody.querySelectorAll('.scol').forEach(function(x){ x.classList.toggle('on', x === b); });
+          paintScale();
         });
       });
       var ii = cbody.querySelector('.scfg-imp');
       ii.value = d.impText || ''; ii.placeholder = T().impText || UI_DEF.impText;
       ii.addEventListener('input', function(){ d.impText = ii.value.trim().slice(0, 14); });
       ii.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); ii.blur(); } });
-      renderDays(); renderHours(); renderPause(); renderTheme(); renderStaff();
+      renderDays(); renderHours(); renderPause(); renderStaff();
       var del = $('scDel');
       if(del) del.addEventListener('click', function(){ askDelete(d.id, d.name); });
     }
@@ -10885,21 +11623,36 @@
           '<button type="button" class="iconbtn" data-del="1" aria-label="Убрать промежуток">✕</button></div>';
       }).join('');
       box.innerHTML = sec('Часы', (d.hours.length ? rows : '<div class="sallday" role="status"><span>Весь день</span></div>') +
+        '<div class="shscale" id="scScale" aria-hidden="true"><div class="shs-track"></div><div class="shs-ticks"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div></div>' +
         '<button type="button" class="addstage" id="scAddH" style="margin-bottom:0">+ Промежуток</button>', null,
         'По желанию. Можно через полночь, например 22:00–02:00. Без часов сфера активна весь день своих дней.');
       box.querySelectorAll('.shrow').forEach(function(r){
         var i = +r.getAttribute('data-i');
         r.querySelectorAll('input').forEach(function(inp){
-          inp.addEventListener('change', function(){ d.hours[i][inp.getAttribute('data-k')] = inp.value; });
-          inp.addEventListener('input', function(){ d.hours[i][inp.getAttribute('data-k')] = inp.value; });
+          inp.addEventListener('change', function(){ d.hours[i][inp.getAttribute('data-k')] = inp.value; paintScale(); });
+          inp.addEventListener('input', function(){ d.hours[i][inp.getAttribute('data-k')] = inp.value; paintScale(); });
         });
         r.querySelector('[data-del]').addEventListener('click', function(){ d.hours.splice(i, 1); renderHours(); });
       });
+      paintScale();
       $('scAddH').addEventListener('click', function(){
         var last = d.hours[d.hours.length - 1];
         d.hours.push(last ? { from: last.to, to: '' } : { from: '09:00', to: '18:00' });
         renderHours();
       });
+    }
+    /* v57 §8.5: шкала суток под «Часами» — выбранные промежутки цветом сферы (через полночь — двумя кусками по краям),
+       без промежутков — вся шкала; меняется сразу при правке времени, только показ */
+    function paintScale(){
+      var d = cfg && cfg.d, el = $('scScale'); if(!d || !el) return;
+      var tr = el.querySelector('.shs-track'), parts = [], ok = /^\d{1,2}:\d{2}$/;
+      if(!d.hours.length) parts.push([0, 1440]);
+      d.hours.forEach(function(h){
+        if(!ok.test(h.from || '') || !ok.test(h.to || '')) return;
+        var a = minOf(h.from), b = minOf(h.to);
+        if(a < b) parts.push([a, b]); else if(a > b){ parts.push([a, 1440]); if(b > 0) parts.push([0, b]); } else parts.push([0, 1440]);
+      });
+      tr.innerHTML = parts.map(function(p){ return '<i style="left:' + (p[0] / 14.4) + '%;width:' + ((p[1] - p[0]) / 14.4) + '%;background:' + esc(d.color || 'var(--type-current)') + '"></i>'; }).join('');
     }
     function renderPause(){
       var d = cfg.d, box = $('scPause'); if(!box) return;
@@ -10909,27 +11662,6 @@
       var inp = $('scPauseIn');
       inp.addEventListener('change', function(){ d.pauseUntil = /^\d{4}-\d{2}-\d{2}$/.test(inp.value) ? inp.value : ''; renderPause(); });
       var off = $('scPauseOff'); if(off) off.addEventListener('click', function(){ d.pauseUntil = ''; renderPause(); });
-    }
-    function renderTheme(){
-      var d = cfg.d, box = $('scTheme'), SHOWN = 3;
-      var row = function(id){
-        var on = (d.theme || '') === id, th = id ? KTHEMES[id] : null;
-        return '<button type="button" role="radio" aria-checked="' + on + '" class="uirow uitheme' + (on ? ' on' : '') + '" data-t="' + id + '">' +
-          (th ? '<span class="uth-sw" style="background:' + th.swatch.bg + '"><i style="background:' + th.swatch.label + ';border-color:' + th.swatch.frame + '"></i></span>'
-              : '<span class="uth-sw" style="background:var(--surface-3)"></span>') +
-          '<span class="lbl">' + (th ? esc(th.name) : 'Общая') + '<small>' + (th ? esc(th.desc) : 'как в параметрах интерфейса') + '</small></span>' + UI_CHECK + '</button>';
-      };
-      var more = THEME_IDS.slice(SHOWN), n = more.length, open = cfg.themesOpen, picked = more.indexOf(d.theme) >= 0;
-      box.innerHTML = sec('Тема оформления', '<div class="uirows" role="radiogroup" aria-label="Тема сферы">' + row('') + THEME_IDS.slice(0, SHOWN).map(row).join('') +
-        '<div class="uimore' + (open ? ' open' : '') + '"' + (open ? '' : ' inert') + '><div>' + more.map(row).join('') + '</div></div>' +
-        '<button type="button" class="uirow uimorebtn" id="scThMore" aria-expanded="' + open + '"><span class="lbl">' +
-          (open ? 'Свернуть' : 'Ещё ' + n + ' тем' + (picked ? '<small>выбрана «' + esc(KTHEMES[d.theme].name) + '»</small>' : '')) + '</span>' +
-          '<svg class="uimore-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button>' +
-        '</div>', null, 'Тема применяется, когда на экране эта сфера (при нескольких сферах в «Сводке» — тема той, что «в разгаре»). «Общая» — тема из параметров интерфейса.');
-      box.querySelectorAll('.uitheme').forEach(function(b){
-        b.addEventListener('click', function(){ d.theme = b.getAttribute('data-t'); renderTheme(); });
-      });
-      $('scThMore').addEventListener('click', function(){ cfg.themesOpen = !cfg.themesOpen; renderTheme(); });
     }
     function renderStaff(){
       var d = cfg.d, box = $('scStaff');
@@ -11132,7 +11864,7 @@
      (kart.swapOut / swapIn); when the theme changes with it, its dimming covers the change and the folders come in after it */
   var swapPendingIn = false, swapPendingT = 0;
   function themeChangesFor(v){
-    var lead = v && v.lead, want = (lead && lead.theme && KTHEMES[lead.theme]) ? lead.theme : '';
+    var want = '';                                     // v57 §8.6: тема всегда из параметров
     if(want === sphThemeNow) return false;
     var base = settings.ui.theme, next = want || (KTHEMES[base] ? base : 'steel');
     return next !== themeId();
@@ -11147,7 +11879,7 @@
   }
   var sphThemePending = null;
   function syncSphereTheme(){
-    var lead = curView && curView.lead, want = (lead && lead.theme && KTHEMES[lead.theme]) ? lead.theme : '';
+    var want = '';                                     // v57 §8.6
     if(want === sphThemeNow || want === sphThemePending) return;
     var base = settings.ui.theme, next = want || (KTHEMES[base] ? base : 'steel');
     if(next === themeId()){ sphThemeNow = want; return; }        // the same look (e.g. the sphere's theme is the common one)
@@ -11306,7 +12038,7 @@
           managers: staffFor(s, 'managers'), executors: staffFor(s, 'executors'),
           groups: groupsOf(s.id).map(function(g){ return { id: g.id, name: g.name || 'Группа', color: g.color || null }; }) };
       }),
-      categories: TYPE_ORDER.map(function(k){ return { id: k, name: TYPES[k].label, short: SEG_LABELS[k], code: TYPES[k].code, color: typeColor(k) }; }),
+      categories: TYPE_ORDER.map(function(k){ return { id: k, name: TYPES[k].label, short: SEG_LABELS[k], code: TYPES[k].code, color: typeColor(k), renamed: !!catName(k) }; }),
       managers: (settings.managers || []).slice(), executors: (settings.executors || []).slice()
       , shareUrl: SHARE_URL                               // v54.2 §2.6: the link sent with the «Процент выполнения» card
       , bar: !!(normNotif(settings.notif).on && normNotif(settings.notif).sphereBar)   // v52 §3.3: the strip in the notification shade
@@ -11534,6 +12266,7 @@
   function openFromAndroid(o){
     if(typeof o === 'string'){ try{ o = JSON.parse(o); }catch(e){ return; } }
     if(!o || typeof o !== 'object') return;
+    if(o.incoming){ openIncoming(o.incoming); return; }        // v55 §6.1: «Поделиться → Планировщик»
     if(!overlay.hidden || !subOverlay.hidden || (projects && projects.isOpen())) return;
     if(leftDrawerOpen) closeLeftDrawer();
     if(rightDrawerOpen) closeRightDrawer();
@@ -11567,6 +12300,143 @@
       }, 260);
     })();
   }
+
+  /* ================= v55 §6.1: «Поделиться → Планировщик» (только в приложении Android) =================
+     Другое приложение отдало текст или ссылку, картинки, звук. Обёртка уже скопировала файлы к себе (files/incoming/{пакет})
+     и открыла приложение с описанием пакета: { id, subject, text, files: [{ file, name, mime, size, kind }], big, skipped }.
+     Окно «Добавить в Планировщик»: что пришло, и выбор — «Запись в список» (списки нижнего ящика, последний выбранный
+     первым, и «+ Новый список»; открывается обычная форма записи с пришедшим) или «Новая задача» (категория, затем обычная
+     форма: первая строка текста — название, остальное — примечание; у задач нет вложений). Окно закрыли — пакет удаляется.
+     Форма, которую заполняют, не закрывается ради него: окно ждёт, пока её закроют. */
+  var INC_LAST = 'planner_inc_last_list_v1', incQueue = null, INC_TITLE_MAX = 2000;
+  function incomingDone(id){ try{ var A = window.AndroidBridge; if(id && A && typeof A.incomingDone === 'function') A.incomingDone(String(id)); }catch(e){} }
+  function incUrl(id, f){ return location.origin + '/incoming/' + encodeURIComponent(id) + '/' + encodeURIComponent(f); }
+  function openIncoming(inc){
+    if(!inc || typeof inc !== 'object' || !inc.id) return;
+    if(incQueue && incQueue.id !== inc.id) incomingDone(incQueue.id);      // an older one that was never shown
+    incQueue = inc;
+    var tries = 0, told = false;
+    (function wait(){
+      if(incQueue !== inc) return;
+      var ready = dataSeen.tasks && dataSeen.groups && dataSeen.spheres && projects && !document.documentElement.classList.contains('booting');
+      var form = !!document.getElementById('f_title') || (projects && projects.busyField()) || (sphWin && sphWin.isOpen()) || !!document.querySelector('#sheet input[type=password]');
+      if(!ready || form){
+        if(form && ready && !told){ told = true; try{ window.AndroidBridge.toast('Пришедшее откроется, когда закроете форму'); }catch(e){} }
+        if(++tries < 3000) setTimeout(wait, 400); else { incQueue = null; incomingDone(inc.id); }
+        return;
+      }
+      incQueue = null;
+      showIncoming(inc);
+    })();
+  }
+  function incLists(){
+    var all = projects.lists().slice(), last = ''; try{ last = localStorage.getItem(INC_LAST) || ''; }catch(e){}
+    var i = -1; all.forEach(function(p, k){ if(p.id === last) i = k; });
+    if(i > 0) all.unshift(all.splice(i, 1)[0]);
+    return all;
+  }
+  function showIncoming(inc){
+    if(leftDrawerOpen) closeLeftDrawer();
+    if(rightDrawerOpen) closeRightDrawer();
+    if(!subOverlay.hidden) closeSubSheet();
+    if(!overlay.hidden) closeSheet();
+    var files = Array.isArray(inc.files) ? inc.files : [];
+    var imgs = files.filter(function(f){ return f.kind === 'image'; }), auds = files.filter(function(f){ return f.kind === 'audio'; });
+    var subj = String(inc.subject || '').trim(), text = String(inc.text || '').replace(/\s+$/, '');
+    var st = { done: false };
+    var prev = '';
+    if(subj) prev += '<div class="inc-subj">' + esc(subj) + '</div>';
+    if(text.trim()) prev += '<div class="inc-text">' + esc(text.slice(0, 800)) + '</div>';
+    if(imgs.length) prev += '<div class="inc-pics">' + imgs.slice(0, 12).map(function(f){ return '<img alt="" src="' + esc(incUrl(inc.id, f.file)) + '" onerror="this.style.visibility=\'hidden\'">'; }).join('') +
+      (imgs.length > 12 ? '<span class="inc-more">+' + (imgs.length - 12) + '</span>' : '') + '</div>';
+    auds.forEach(function(f){
+      var ok = ATT.playable({ mime: f.mime });
+      prev += '<div class="inc-aud">' + NOTE_ICO + '<span><b>' + esc(f.name || 'Звук') + '</b>' + (ok ? '' : 'Формат не воспроизводится в приложении · ') + fmtSz(+f.size || 0) + '</span></div>';
+    });
+    if(imgs.length > ATT.MAX_IMG) prev += '<div class="inc-note">В запись войдут ' + ATT.MAX_IMG + ' картинок из ' + imgs.length + '</div>';
+    if(inc.big) prev += '<div class="inc-note">' + (inc.big === 1 ? 'Один файл больше 50 МБ — не будет добавлен' : 'Файлов больше 50 МБ: ' + inc.big + ' — не будут добавлены') + '</div>';
+    if(inc.skipped) prev += '<div class="inc-note">Не принято файлов: ' + inc.skipped + ' — Планировщик принимает текст, картинки и звук</div>';
+    if(!prev) prev = '<div class="inc-note">Пришёл только файл больше 50 МБ</div>';
+    var noTask = !(subj || text.trim());
+    openSheet('<h2>Добавить в Планировщик</h2><div class="sheet-sub">Пришло из другого приложения</div><div class="inc-prev">' + prev + '</div>' +
+      '<button type="button" class="btn btn-primary btn-block" id="incList">Запись в список</button>' +
+      '<button type="button" class="btn btn-secondary btn-block" id="incTask"' + (noTask ? ' disabled' : '') + '>Новая задача</button>' +
+      (noTask ? '<div class="hint inc-hint">У задач нет вложений — добавьте в список</div>' :
+        '<div class="hint inc-hint">' + (files.length ? 'В название задачи войдёт только текст: у задач нет вложений' : 'Весь текст станет названием задачи') +
+        ((subj + ' ' + text).replace(/\s+/g, ' ').trim().length > INC_TITLE_MAX ? ' (первые ' + INC_TITLE_MAX + ' знаков)' : '') + '</div>'));
+    sheetOnClose = function(){ if(!st.done) incomingDone(inc.id); };
+    document.getElementById('incList').addEventListener('click', function(){
+      openListPick({ title: 'Запись в список', sub: 'Пришедшее откроется в форме новой записи этого списка', lists: incLists(), allowNew: true,
+        back: function(){ st.done = true; showIncoming(inc); },
+        pick: function(p){
+          st.done = true;
+          try{ localStorage.setItem(INC_LAST, p.id); }catch(e){}
+          if(currentTab === 'archive' || currentTab === 'reports') goSection('summary');
+          setTimeout(function(){ if(!projects.fromIncoming(p, inc)) incomingDone(inc.id); }, 80);
+        } });
+    });
+    var tb = document.getElementById('incTask');
+    if(tb && !noTask) tb.addEventListener('click', function(){ incTask(inc, st, subj, text); });
+  }
+  function incTask(inc, st, subj, text){
+    var v = curView || sphView(), act = v.none ? [] : (v.spheres || []);
+    // v55 §6.1 (ответ 14 октября): всё пришедшее — тема и текст — идёт в название задачи одной строкой; описание не заполняется
+    var one = function(s){ return String(s || '').replace(/\s+/g, ' ').trim(); };
+    var ts = one(subj), tt = one(text);
+    var title = ts && tt ? (tt.indexOf(ts) >= 0 ? tt : ts + ' — ' + tt) : (ts || tt);
+    var preset = { title: title.slice(0, INC_TITLE_MAX) };
+    function cats(sid){
+      openSheet(newTaskTitle(sid) + '<div class="sheet-sub">Выберите категорию</div>' +
+        '<div class="typegrid">' + TYPE_ORDER.map(function(k){
+          return '<button class="typeopt" data-k="' + k + '"><div class="bar" style="background:' + typeColor(k) + '"></div><div class="name">' + esc(TYPES[k].label) + '</div></button>';
+        }).join('') + '</div>');
+      sheetEl.querySelectorAll('.typeopt').forEach(function(b){
+        b.addEventListener('click', function(){
+          var k = b.getAttribute('data-k');
+          st.done = true; incomingDone(inc.id); closeSheet();
+          setTimeout(function(){ openTaskForm(null, k, sid, null, preset); }, 180);
+        });
+      });
+    }
+    if(act.length > 1){
+      openSheet('<h2>Новая задача</h2><div class="sheet-sub">Выберите сферу деятельности</div><div class="outcomegrid">' + act.map(function(sp){
+        return '<button class="outcomeopt" data-s="' + esc(sp.id) + '">' + sphDot(sp.color) + '<span class="name">' + esc(sp.name || 'Сфера') + '</span></button>';
+      }).join('') + '</div>');
+      sheetEl.querySelectorAll('.outcomeopt[data-s]').forEach(function(b){ b.addEventListener('click', function(){ cats(b.getAttribute('data-s')); }); });
+      return;
+    }
+    cats(act.length ? act[0].id : (hasUserSpheres() ? null : MAIN_SPH));
+  }
+  /* a window from below with the lists of the bottom drawer (and «+ Новый список»): o = { title, sub, lists, allowNew, pick(p), back() } */
+  function openListPick(o){
+    var lists = o.lists || [];
+    openSheet('<h2>' + esc(o.title) + '</h2><div class="sheet-sub">' + esc(o.sub || 'Выберите список') + '</div>' +
+      (lists.length ? '<div class="outcomegrid lpick">' + lists.map(function(p){
+        var n = p.entries.length;
+        return '<button class="outcomeopt" data-l="' + esc(p.id) + '"><span class="name">' + esc(p.name || 'Без названия') + '</span><span class="lp-n">' + (n ? n : 'пусто') + '</span></button>';
+      }).join('') + '</div>' : '<div class="hint" style="margin:0 2px 10px">Других списков пока нет</div>') +
+      (o.allowNew ? '<div class="lp-new" id="lpNewBox"><button type="button" class="addstage" id="lpNew">+ Новый список</button></div>' : '') +
+      (o.back ? '<div class="sheet-actions"><button type="button" class="btn btn-secondary" id="lpBack">Назад</button></div>' : ''));
+    var chosen = function(p){ if(!p) return; o.pick(p); if(!overlay.hidden) closeSheet(); };
+    sheetEl.querySelectorAll('.outcomeopt[data-l]').forEach(function(b){
+      b.addEventListener('click', function(){ chosen(projects.byId(b.getAttribute('data-l'))); });
+    });
+    var bk = document.getElementById('lpBack'); if(bk) bk.addEventListener('click', function(){ o.back(); });
+    var nb = document.getElementById('lpNew');
+    if(nb) nb.addEventListener('click', function(){
+      var box = document.getElementById('lpNewBox');
+      box.innerHTML = '<div class="lp-row"><input type="text" id="lpName" maxlength="40" autocomplete="off" enterkeyhint="done" placeholder="Название нового списка" aria-label="Название нового списка">' +
+        '<button type="button" class="stgbtn primary" id="lpMake">Создать</button></div>';
+      var inp = document.getElementById('lpName'), mk = document.getElementById('lpMake');
+      keepFocus(mk);
+      var make = function(){ var nm = inp.value.trim(); if(!nm){ inp.focus(); return; } chosen(projects.newList(nm)); };
+      mk.addEventListener('click', make);
+      inp.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); make(); } });
+      try{ inp.focus({ preventScroll: true }); }catch(_){ inp.focus(); }
+      revealInSheet(inp);
+    });
+  }
+
   window.onAndroidIntent = function(j){ setTimeout(function(){ openFromAndroid(j); }, 0); };
 
   /* ================= v53: сохранность и конфиденциальность (только в приложении Android) =================
@@ -12016,6 +12886,8 @@
       if(bg) localStorage.setItem('planner_boot_bg_' + (isDarkNow() ? 'dark' : 'light'), bg);
     }catch(e){}
     var root = document.documentElement;
+    splashReady = true; syncSplash();                    // v56 §7.1: тема для заставки следующих запусков
+    try{ if(window.AndroidBridge && typeof window.AndroidBridge.splashDone === 'function') window.AndroidBridge.splashDone(); }catch(e){}   // v56 §7.1
     if(root.classList.contains('booting')){
       root.classList.remove('booting');
       var app = document.getElementById('app');
