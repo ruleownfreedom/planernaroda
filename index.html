@@ -685,7 +685,7 @@
   .pa-btn svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:none; }
   .pa-btn.rec{ background:var(--danger); border-color:var(--danger); color:#fff; }
   .pa-btn:disabled{ opacity:.45; }
-  .pa-rec{ display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:100px; background:var(--surface-2); border:1px solid var(--danger); color:var(--text); font:600 13px var(--font-body); }
+  .pa-rec{ display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:14px; background:var(--surface-2); border:1px solid var(--danger); color:var(--text); font:600 13px var(--font-body); }
   .pa-rec i{ width:10px; height:10px; border-radius:50%; background:var(--danger); animation:parec 1s ease-in-out infinite; flex:none; }
   .pa-rec b{ font:600 14px var(--font-mono); font-variant-numeric:tabular-nums; flex:none; }
   /* v56 §7.3: бегущая волна записи — столбики в стиле дорожки голосовой заметки */
@@ -698,8 +698,8 @@
   .pa-rec button{ border:0; border-radius:100px; background:var(--danger); color:#fff; font:600 13px var(--font-body); padding:7px 14px; cursor:pointer; }
   @keyframes parec{ 0%,100%{ opacity:1; } 50%{ opacity:.25; } }
   .pa-note{ font-size:12.5px; color:var(--text-dim); line-height:1.4; }
-  .pa{ display:flex; align-items:center; gap:12px; padding:7px 14px 7px 7px; border:1px solid var(--border-soft); border-radius:100px; background:var(--surface-2); }
-  .pa-play{ flex:none; width:44px; height:44px; border-radius:50%; border:0; background:var(--text); color:var(--bg); display:flex; align-items:center; justify-content:center; padding:0; cursor:pointer; }
+  .pa{ display:flex; align-items:center; gap:12px; padding:7px 12px 7px 7px; border:1px solid var(--border-soft); border-radius:14px; background:var(--surface-2); }
+  .pa-play{ flex:none; width:44px; height:44px; border-radius:10px; border:0; background:var(--text); color:var(--bg); display:flex; align-items:center; justify-content:center; padding:0; cursor:pointer; }
   .pa-play svg{ width:19px; height:19px; fill:currentColor; }
   .pa-wave{ flex:1; min-width:0; height:46px; display:flex; align-items:center; justify-content:space-between; gap:2px; cursor:pointer; touch-action:manipulation; }
   .pa-wave i{ flex:0 0 auto; width:2.5px; border-radius:2px; background:var(--text-faint); opacity:.6; }
@@ -707,7 +707,19 @@
   /* v49 §4: the bar at the edge of what has played — coloured in part; the bars of a playing record are its rewind */
   .pa-wave i.part{ opacity:1; background:linear-gradient(90deg, var(--type-current) var(--f,50%), color-mix(in srgb, var(--text-faint) 60%, transparent) var(--f,50%)); }
   .pa.on .pa-wave{ touch-action:none; }
-  .pa-time{ flex:none; font:600 12.5px var(--font-mono); color:var(--text-dim); font-variant-numeric:tabular-nums; }
+  .pa-time{ flex:none; display:flex; flex-direction:column; align-items:flex-end; gap:1px; font:600 12.5px var(--font-mono); color:var(--text-dim); font-variant-numeric:tabular-nums; line-height:1.25; }
+  .pa-cur{ font:inherit; color:var(--type-current); }
+  .pa-cur:empty{ display:none; }
+  /* v58: the small player at the top, in place of the planner's name, while a record plays on after its window closed */
+  .topbar-inner{ position:relative; }
+  .topbar-inner.has-mini > .app-title, .topbar-inner.has-mini > .section-label{ visibility:hidden; }
+  .plmini{ position:absolute; inset:8px 18px 6px; display:flex; align-items:center; z-index:2; animation:plmini .24s ease-out; }
+  @keyframes plmini{ from{ opacity:0; transform:translateY(-6px); } to{ opacity:1; transform:none; } }
+  @media (prefers-reduced-motion:reduce){ .plmini{ animation:none; } }
+  .plmini .pa{ flex:1; min-width:0; height:100%; max-height:58px; gap:10px; padding:4px 8px 4px 4px; }
+  .plmini .pa-play{ width:38px; height:38px; }
+  .plmini .pa-wave{ height:34px; }
+  .plmini .plmini-x{ width:28px; height:28px; }
   .pa-rm{ flex:none; width:26px; height:26px; border-radius:50%; border:0; background:var(--surface-3); color:var(--text-dim); font-size:13px; line-height:1; cursor:pointer; padding:0; }
   .pa-miss{ border-style:dashed; color:var(--text-faint); font-size:12.5px; padding:9px 14px; gap:8px; }
   .pa-miss svg{ width:18px; height:18px; flex:none; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
@@ -898,6 +910,7 @@
   .uiicon.on{ color:var(--text); }
   .uiicon small{ font-size:11px; line-height:1.25; text-align:center; max-width:100%; }
   .uiicons.off .uiicon{ cursor:default; }
+  .uimore .uiicons2{ padding-top:2px; }
   .uiicon:focus-visible .uic{ outline-color:var(--text); }
   .uopt{ width:100%; border:0; background:transparent; text-align:left; font-family:var(--font-body); color:var(--text); cursor:pointer; }
   .uopt .uth-check{ flex:none; color:var(--type-current); opacity:0; }
@@ -953,6 +966,11 @@
     background:color-mix(in srgb, var(--danger) 16%, var(--bg)); border:1px solid color-mix(in srgb, var(--danger) 45%, transparent); box-shadow:0 6px 18px rgba(0,0,0,.18); }
   .bk-banner.ready{ background:color-mix(in srgb, var(--type-current, #4a8) 18%, var(--bg)); border-color:color-mix(in srgb, var(--type-current, #4a8) 50%, transparent); }
   .bk-banner .bkb-t{ flex:1; min-width:0; text-align:left; background:none; border:0; padding:4px 0; color:var(--text); font:600 13px/1.3 var(--font-body); cursor:pointer; }
+  .bk-nag{ touch-action:pan-y; }
+  .bk-banner .bkb-t small{ display:block; font:500 11.5px/1.3 var(--font-body); color:var(--text-dim); margin-top:1px; }
+  @keyframes abflash{ 0%,100%{ box-shadow:0 0 0 0 transparent; } 30%{ box-shadow:0 0 0 3px color-mix(in srgb, var(--type-current) 55%, transparent); } }
+  #abBlock{ border-radius:12px; }
+  #abBlock.ab-flash{ animation:abflash 1.4s ease 2; }
   .bk-banner .bkb-x{ flex:none; background:var(--surface, rgba(0,0,0,.08)); border:1px solid var(--border-soft, rgba(0,0,0,.12)); border-radius:10px; padding:7px 10px; color:var(--text); font:700 12.5px var(--font-body); cursor:pointer; }
 
   /* ================= Нижний ящик: окно проекта (список записей) =================
@@ -1151,6 +1169,23 @@
   .sheet .swd{ border:1.5px solid var(--border); background:var(--surface); color:var(--text); border-radius:var(--cell-r,8px); padding:10px 0;
     font:600 13px var(--font-body); cursor:pointer; }
   .sheet .swd.on{ background:var(--pick,var(--type-periodic)); border-color:var(--pick,var(--type-periodic)); color:var(--pick-ink,#fff); }
+  /* v58: the dials under the weekdays — own hours of that day */
+  .swclk{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-top:6px; }
+  .sheet .swc{ height:34px; border:1.5px dashed var(--border); background:none; color:var(--text-dim); border-radius:var(--cell-r,8px); padding:0; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; transition:background-color .15s ease, border-color .15s ease, opacity .15s ease; }
+  .swc svg{ width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+  .sheet .swc.own{ border-style:solid; border-color:var(--pick,var(--type-periodic)); background:var(--pick,var(--type-periodic)); color:var(--pick-ink,#fff); }
+  .sheet .swc.dis{ opacity:.4; }
+  .swdh{ margin-top:10px; padding:12px 12px 4px; border:1px solid var(--border-soft); border-radius:var(--radius-m); background:var(--surface-2); }
+  .swdh-h{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
+  .swdh-h b{ font:600 13.5px var(--font-body); color:var(--text); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .sheet .swdh-x{ flex:none; border:1px solid var(--border); background:var(--surface); color:var(--text-dim); border-radius:100px; padding:6px 11px;
+    font:600 12px var(--font-body); cursor:pointer; }
+  .swdh .shbtns{ margin-bottom:8px; }
+  .sxt{ font:700 10.5px var(--font-body); letter-spacing:.1em; text-transform:uppercase; color:var(--danger); margin:4px 2px 6px; }
+  .shrow.sx input[type=time]{ border-style:dashed; border-color:color-mix(in srgb, var(--danger) 55%, var(--border)); }
+  .shs-track i.x{ background:repeating-linear-gradient(135deg, var(--sc) 0 3px, transparent 3px 6px) !important; opacity:.45; }
+  .shs-track i:not(.x){ background:var(--sc); }
   .shrow{ display:flex; align-items:center; gap:8px; margin-bottom:8px; }
   .shrow span{ font-size:13px; color:var(--text-dim); }
   .shrow input[type=time], .scfg-body input[type=date]{ flex:1 1 0%; min-width:0; background:var(--surface); border:1px solid var(--border); color:var(--text);
@@ -1271,6 +1306,7 @@
   #kart.flashing .khint{ visibility:hidden; }
   /* the «+» stands at the middle of the switcher's height (82 px: (82 − 48) / 2 = 17 px higher) */
   #app.sw-on .fab{ bottom:calc(37px + env(safe-area-inset-bottom, 0px)); }
+  #app.kbhold .sphsw, #app.kbhold .fab{ translate:0 var(--kbk, 0px); }
   /* the short dimming while the theme (or the bar's place) changes, as at the start */
   .theme-veil{ position:fixed; inset:0; z-index:80; pointer-events:none; opacity:0; transition:opacity .14s ease; }
   .theme-veil.on{ opacity:1; pointer-events:auto; }
@@ -3960,6 +3996,11 @@
     s = s || {};
     var d = s.days || {}, st = s.staff || {};
     var strs = function(a, max){ return (Array.isArray(a) ? a : []).map(function(v){ return String(v || '').trim().slice(0, max || 60); }).filter(Boolean); };
+    var hl = function(a){ return (Array.isArray(a) ? a : []).map(function(h){ return { from: hhmm(h && h.from), to: hhmm(h && h.to) }; })
+                                 .filter(function(h){ return h.from && h.to && h.from !== h.to; }); };
+    /* v58: own hours of a weekday — { '5': { hours, excl } } (used on that weekday when it is chosen in «Дни недели») */
+    var wh = {}, wsrc = (d.wh && typeof d.wh === 'object') ? d.wh : {};
+    for(var wk = 0; wk < 7; wk++){ var wv = wsrc[wk]; if(wv && typeof wv === 'object') wh[wk] = { hours: hl(wv.hours), excl: hl(wv.excl) }; }
     var o = {
       id: String(s.id), name: String(s.name || '').slice(0, 40), main: s.id === MAIN_SPH || !!s.main, order: isFinite(s.order) ? +s.order : 0,
       color: sphColor(s.color) || SPH_COLORS[0],
@@ -3968,9 +4009,10 @@
               week: (Array.isArray(d.week) ? d.week : []).map(Number).filter(function(n){ return n >= 0 && n <= 6 && n === Math.floor(n); })
                       .filter(function(n, i, a){ return a.indexOf(n) === i; }).sort(),
               dates: strs(d.dates, 10).filter(function(x){ return /^\d{4}-\d{2}-\d{2}$/.test(x); }).sort(),
-              months: strs(d.months, 7).filter(function(x){ return /^\d{4}-\d{2}$/.test(x); }).sort() },   // §10: whole months
-      hours: (Array.isArray(s.hours) ? s.hours : []).map(function(h){ return { from: hhmm(h && h.from), to: hhmm(h && h.to) }; })
-               .filter(function(h){ return h.from && h.to && h.from !== h.to; }),
+              months: strs(d.months, 7).filter(function(x){ return /^\d{4}-\d{2}$/.test(x); }).sort(),   // §10: whole months
+              wh: wh, v: 2 },
+      hours: hl(s.hours),
+      excl: hl(s.excl),                                    // v58: the time cut out of the hours (a lunch out of 9:00–18:00)
       pauseUntil: /^\d{4}-\d{2}-\d{2}$/.test(s.pauseUntil || '') ? s.pauseUntil : '',
       theme: '',                                           // v57 §8.6: у сфер своей темы больше нет (старое поле не читается)
       impText: String(s.impText || '').trim().slice(0, 14),
@@ -3979,7 +4021,13 @@
       mode: (s.mode === 'off' || s.mode === 'on' || s.mode === 'auto') ? s.mode : (s.manual ? 'on' : 'auto'),
       createdAt: +s.createdAt || 0, updatedAt: +s.updatedAt || 0
     };
-    if(o.main){ o.id = MAIN_SPH; o.pauseUntil = ''; o.mode = 'auto'; o.name = MAIN_SPH_NAME; o.days = { mode: 'always', week: [0, 1, 2, 3, 4, 5, 6], dates: [], months: [] }; o.hours = []; }
+    /* v58: weekdays and dates are summed (a day is the sphere's when its weekday is chosen or its date is marked). Before v58
+       only the chosen tab counted, so a sphere saved then keeps only that tab's choice. */
+    if(!s.main && d.v !== 2 && s.days){
+      if(o.days.mode === 'dates') o.days.week = [];
+      else if(o.days.mode === 'week'){ o.days.dates = []; o.days.months = []; }
+    }
+    if(o.main){ o.id = MAIN_SPH; o.pauseUntil = ''; o.mode = 'auto'; o.name = MAIN_SPH_NAME; o.days = { mode: 'always', week: [0, 1, 2, 3, 4, 5, 6], dates: [], months: [], wh: {}, v: 2 }; o.hours = []; o.excl = []; }
     return o;
   }
   function sphereById(id){ for(var i = 0; i < spheres.length; i++) if(spheres[i].id === id) return spheres[i]; return null; }
@@ -4073,14 +4121,48 @@
   function minOf(v){ var h = hhmm(v); return h ? +h.slice(0, 2) * 60 + +h.slice(3, 5) : 0; }
   function dayIso(d){ return isoDate(d.getFullYear(), d.getMonth(), d.getDate()); }
   function dow(d){ return (d.getDay() + 6) % 7; }                       // Monday = 0
-  function hasDays(s){ var m = s.days.mode; return m === 'always' || (m === 'dates' ? (s.days.dates.length + s.days.months.length) > 0 : s.days.week.length > 0); }
+  /* v58: weekdays and dates (and whole months) are summed; «Всегда» — every day */
+  function hasDays(s){ return s.days.mode === 'always' || (s.days.week.length + s.days.dates.length + s.days.months.length) > 0; }
   function isSphDay(s, d){
-    var m = s.days.mode;
-    if(m === 'always') return true;
-    if(m === 'dates'){ var iso = dayIso(d); return s.days.dates.indexOf(iso) >= 0 || s.days.months.indexOf(iso.slice(0, 7)) >= 0; }
-    return s.days.week.indexOf(dow(d)) >= 0;
+    if(s.days.mode === 'always') return true;
+    if(s.days.week.indexOf(dow(d)) >= 0) return true;
+    var iso = dayIso(d); return s.days.dates.indexOf(iso) >= 0 || s.days.months.indexOf(iso.slice(0, 7)) >= 0;
   }
   function pausedOn(s, d){ return !s.main && !!s.pauseUntil && dayIso(d) < s.pauseUntil; }   // off until that date; works again from it
+  /* ---- v58: the hours of a day ----
+     A weekday chosen in «Дни недели» may have its own hours (days.wh[weekday]); any other day of the sphere (a date from the
+     calendar, a weekday without its own hours) takes the common ones. Each set of hours = its spans (none — the whole day)
+     minus its exclusions. The result is in minutes from the start of the day; a span over midnight goes past 1440. */
+  function rngMerge(list){
+    var out = [];
+    list.filter(function(p){ return p[1] > p[0]; }).sort(function(p, q){ return p[0] - q[0]; }).forEach(function(p){
+      var l = out[out.length - 1]; if(l && p[0] <= l[1]) l[1] = Math.max(l[1], p[1]); else out.push([p[0], p[1]]);
+    });
+    return out;
+  }
+  function rngCut(list, a, b){
+    var out = [];
+    list.forEach(function(p){
+      if(b <= p[0] || a >= p[1]){ out.push(p); return; }
+      if(a > p[0]) out.push([p[0], a]); if(b < p[1]) out.push([b, p[1]]);
+    });
+    return out;
+  }
+  function hrsRanges(hours, excl){
+    hours = hours || []; excl = excl || [];
+    var ok = function(h){ return !!(h && hhmm(h.from) && hhmm(h.to) && hhmm(h.from) !== hhmm(h.to)); };
+    var span = function(h){ var a = minOf(h.from), b = minOf(h.to); return a < b ? [a, b] : [a, 1440 + b]; };
+    var base = hours.length ? hours.filter(ok).map(span) : [[0, 1440]], xs = excl.filter(ok);
+    base = rngMerge(base);
+    xs.forEach(function(x){ var r = span(x); [-1440, 0, 1440].forEach(function(o){ base = rngCut(base, r[0] + o, r[1] + o); }); });
+    return { r: base, allDay: !hours.length && !xs.length };
+  }
+  function sphSpec(s, d){
+    var w = dow(d), o = s.days.mode !== 'always' && s.days.week.indexOf(w) >= 0 && s.days.wh && s.days.wh[w];
+    return o ? { hours: o.hours, excl: o.excl || [], own: true } : { hours: s.hours, excl: s.excl || [] };
+  }
+  function sphDayInfo(s, d){ var sp = sphSpec(s, d); return hrsRanges(sp.hours, sp.excl); }
+  function minHm(v){ v = ((v % 1440) + 1440) % 1440; return pad2(Math.floor(v / 60)) + ':' + pad2(v % 60); }
   /* the period of the schedule running at «now», or null: { from, to } as times (a span over midnight belongs to the day it
      starts on; without hours the period is the whole day) */
   function schedPeriod(s, now){
@@ -4089,14 +4171,14 @@
     var day0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()), m = now.getHours() * 60 + now.getMinutes();
     var yest = new Date(day0); yest.setDate(yest.getDate() - 1);
     var today = isSphDay(s, day0) && !pausedOn(s, day0), prev = isSphDay(s, yest) && !pausedOn(s, yest);
-    if(!s.hours.length){ if(!today) return null; var e = new Date(day0); e.setDate(e.getDate() + 1); return { from: day0, to: e, allDay: true }; }
-    for(var i = 0; i < s.hours.length; i++){
-      var a = minOf(s.hours[i].from), b = minOf(s.hours[i].to);
-      if(a < b){ if(today && m >= a && m < b) return { from: new Date(day0.getTime() + a * 60000), to: new Date(day0.getTime() + b * 60000) }; }
-      else {                                                            // over midnight: 22:00–02:00
-        if(today && m >= a) return { from: new Date(day0.getTime() + a * 60000), to: new Date(day0.getTime() + (1440 + b) * 60000) };
-        if(prev && m < b) return { from: new Date(yest.getTime() + a * 60000), to: new Date(day0.getTime() + b * 60000) };
-      }
+    var at = function(b, min){ return new Date(b.getTime() + min * 60000); }, i, p;
+    if(today){
+      var it = sphDayInfo(s, day0);
+      for(i = 0; i < it.r.length; i++){ p = it.r[i]; if(m >= p[0] && m < p[1]) return { from: at(day0, p[0]), to: at(day0, p[1]), allDay: it.allDay }; }
+    }
+    if(prev){
+      var iy = sphDayInfo(s, yest);
+      for(i = 0; i < iy.r.length; i++){ p = iy.r[i]; if(p[1] > 1440 && m + 1440 >= p[0] && m + 1440 < p[1]) return { from: at(yest, p[0]), to: at(yest, p[1]) }; }
     }
     return null;
   }
@@ -4177,14 +4259,14 @@
     now = now || new Date();
     if(!hasDays(s)) return null;
     var day0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    var limit = s.days.mode === 'dates' ? 800 : 15;
+    var limit = (s.days.mode !== 'always' && (s.days.dates.length || s.days.months.length)) ? 800 : 15;
     for(var k = 0; k <= limit; k++){
       var d = new Date(day0); d.setDate(d.getDate() + k);
       if(!isSphDay(s, d) || pausedOn(s, d)) continue;
-      var starts = s.hours.length ? s.hours.map(function(h){ return minOf(h.from); }).sort(function(a, b){ return a - b; }) : [0];
-      for(var j = 0; j < starts.length; j++){
-        var at = new Date(d.getTime() + starts[j] * 60000);
-        if(at > now) return { at: at, allDay: !s.hours.length };
+      var it = sphDayInfo(s, d);
+      for(var j = 0; j < it.r.length; j++){
+        var at = new Date(d.getTime() + it.r[j][0] * 60000);
+        if(at > now) return { at: at, allDay: it.allDay };
       }
     }
     return null;
@@ -4212,7 +4294,7 @@
     if(!hasDays(s)) return { on: false, text: 'Не выбраны дни — не включается' };
     if(isPaused(s, now)) return { on: false, text: 'На паузе до ' + fmtDayShort(s.pauseUntil) };
     var nx = nextStart(s, now);
-    if(!nx) return { on: false, text: s.days.mode === 'dates' ? 'Выбранные даты прошли — не включается' : 'Не включается' };
+    if(!nx) return { on: false, text: (s.days.mode !== 'always' && !s.days.week.length) ? 'Выбранные даты прошли — не включается' : 'Не включается' };
     return { on: false, text: 'Включится ' + whenText(nx.at, nx.allDay, now) };
   }
   // the staff lists for a task of this sphere: the sphere's own, or (empty) the common ones from the settings
@@ -4357,6 +4439,7 @@
   function statLogAdd(t, kind, at, to){
     if(!t || !kind) return;
     var e = { t: at || Date.now(), kind: kind, sph: taskSphId(t) || '', taskId: String(t.id || ''), typ: t.type || '' };
+    if(String(t.manager || '').trim()) e.mgr = String(t.manager).trim(); if(String(t.executor || '').trim()) e.exe = String(t.executor).trim();   // v58: for a task deleted later
     if(to) e.to = to;                                   // v54.2: «moved» — the category it went to (counted as added there)
     statLog.push(e);
     statLogSave(); snapSoon();
@@ -5618,18 +5701,42 @@
     try{ if(window.AndroidBridge && typeof window.AndroidBridge.getAppIcon === 'function'){ var v = window.AndroidBridge.getAppIcon(); if(APP_ICONS[v]) return v; } }catch(_){}
     return '';
   }
+  /* v58: like the themes — the first row of icons is shown, the rest fold out under a button (kept while the app runs) */
+  var ICONS_SHOWN = 3, iconsOpen = false;
+  function moreIconsLabel(){
+    if(iconsOpen) return 'Свернуть';
+    var n = APP_ICON_ORDER.length - ICONS_SHOWN, i = APP_ICON_ORDER.indexOf(currentAppIcon());
+    var word = (n % 10 === 1 && n % 100 !== 11) ? 'иконка' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) ? 'иконки' : 'иконок';
+    return 'Ещё ' + n + ' ' + word + (i >= ICONS_SHOWN ? '<small>выбрана «' + esc(APP_ICONS[APP_ICON_ORDER[i]].n) + '»</small>' : '');
+  }
   function appIconsHTML(){
     var cur = currentAppIcon(), can = canSetIcon();
-    return '<div class="uigrp"><div class="uigrp-t">Иконка приложения</div><div class="uirows"><div class="uiicons' + (can ? '' : ' off') + '" role="radiogroup" aria-label="Иконка приложения">' +
-      APP_ICON_ORDER.map(function(id){
-        var on = id === cur;
-        return '<button type="button" role="radio" aria-checked="' + on + '" class="uiicon' + (on ? ' on' : '') + '" data-icon="' + id + '"' + (can ? '' : ' aria-disabled="true"') + '>' +
-          '<span class="uic">' + appIconSVG(id) + '</span><small>' + esc(APP_ICONS[id].n) + '</small></button>';
-      }).join('') + '</div></div><p class="unote">' +
+    var one = function(id){
+      var on = id === cur;
+      return '<button type="button" role="radio" aria-checked="' + on + '" class="uiicon' + (on ? ' on' : '') + '" data-icon="' + id + '"' + (can ? '' : ' aria-disabled="true"') + '>' +
+        '<span class="uic">' + appIconSVG(id) + '</span><small>' + esc(APP_ICONS[id].n) + '</small></button>';
+    };
+    var more = APP_ICON_ORDER.length > ICONS_SHOWN;
+    return '<div class="uigrp"><div class="uigrp-t">Иконка приложения</div><div class="uirows" role="radiogroup" aria-label="Иконка приложения">' +
+      '<div class="uiicons' + (can ? '' : ' off') + '">' + APP_ICON_ORDER.slice(0, ICONS_SHOWN).map(one).join('') + '</div>' +
+      (more ? '<div class="uimore' + (iconsOpen ? ' open' : '') + '" id="uiIcMore"' + (iconsOpen ? '' : ' inert') + '><div><div class="uiicons uiicons2' + (can ? '' : ' off') + '">' +
+          APP_ICON_ORDER.slice(ICONS_SHOWN).map(one).join('') + '</div></div></div>' +
+        '<button type="button" class="uirow uimorebtn" id="uiIcMoreBtn" aria-controls="uiIcMore" aria-expanded="' + iconsOpen + '">' +
+          '<span class="lbl" id="uiIcMoreLbl">' + moreIconsLabel() + '</span>' +
+          '<svg class="uimore-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button>' : '') +
+      '</div><p class="unote">' +
       (can ? 'Значок приложения на рабочем столе телефона. После смены он обновится через несколько секунд; на некоторых телефонах значок нужно заново вынести на рабочий стол.'
            : 'Значок приложения на рабочем столе. Меняется в приложении для Android; здесь только показаны иконки тем.') + '</p></div>';
   }
   function wireAppIcons(box){
+    var mb = box.querySelector('#uiIcMoreBtn'), mo = box.querySelector('#uiIcMore');
+    if(mb && mo) mb.addEventListener('click', function(){
+      iconsOpen = !iconsOpen;
+      mo.classList.toggle('open', iconsOpen);
+      if(iconsOpen) mo.removeAttribute('inert'); else mo.setAttribute('inert', '');
+      mb.setAttribute('aria-expanded', iconsOpen);
+      box.querySelector('#uiIcMoreLbl').innerHTML = moreIconsLabel();
+    });
     box.querySelectorAll('.uiicon').forEach(function(btn){
       btn.addEventListener('click', function(){
         if(!canSetIcon()) return;
@@ -5638,6 +5745,7 @@
         var ok = false; try{ ok = window.AndroidBridge.setAppIcon(id); }catch(_){}
         if(!ok){ try{ window.AndroidBridge.toast('Не удалось сменить иконку'); }catch(_){} return; }
         box.querySelectorAll('.uiicon').forEach(function(b){ var on = b === btn; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); });
+        var il = box.querySelector('#uiIcMoreLbl'); if(il) il.innerHTML = moreIconsLabel();
         try{ window.AndroidBridge.toast('Иконка «' + APP_ICONS[id].n + '» появится на рабочем столе через несколько секунд'); }catch(_){}
       });
     });
@@ -6326,7 +6434,7 @@
         '<input type="number" inputmode="numeric" min="1" id="dkDays" value="' + K.days + '" aria-label="Число дней"><span class="dkw">' + delDaysWord(K.days) + '</span></span>' + UI_CHECK + '</div>' +
       '</div><p class="unote">Записи, удалённые из списков, лежат в нижнем ящике раздела «Отчёты» и там удаляются совсем, когда срок хранения выйдет. Срок считается от дня удаления; не меньше одного дня.</p>' +
       '<div class="uirows" style="margin-top:12px">' +
-      '<label class="uirow"><span class="lbl">Открывать ящик по паролю<small>' + (on ? 'включено' : 'пароль будет спрашиваться при открытии ящика') + '</small></span>' + uiSwitch('dkLock', on) + '</label>' +
+      '<label class="uirow"><span class="lbl">Открывать ящик с удалёнными записями по паролю<small>' + (on ? 'включено' : 'пароль будет спрашиваться при открытии этого ящика') + '</small></span>' + uiSwitch('dkLock', on) + '</label>' +
       (on ? '<button type="button" class="uirow uopt" id="dkChange"><span class="lbl">Сменить пароль</span></button>' : '') + '</div>' +
       '<p class="unote">Пароль закрывает ящик в приложении, но не шифрует записи — они хранятся на телефоне в обычном виде.</p>';
   }
@@ -6626,7 +6734,7 @@
     var w = x.wave && x.wave.length ? x.wave : [];
     return '<div class="pa" data-e="' + esc(eid) + '" data-f="' + esc(x.file) + '" data-m="' + esc(ATT.audioType(x)) + '" data-dur="' + (x.dur || 0) + '" data-size="' + (x.size || 0) + '" data-w="' + w.join(',') + '"><button type="button" class="pa-play" aria-label="Играть">' + PLAY_ICO + '</button>' +
       '<div class="pa-wave">' + waveBars(w, 36) + '</div>' +
-      '<span class="pa-time">' + fmtDur(x.dur) + '</span>' + rm + '</div>';
+      '<span class="pa-time"><b class="pa-cur"></b><span class="pa-tot">' + fmtDur(x.dur) + '</span></span>' + rm + '</div>';
   }
   /* n bars from the stored values (taken over equal stretches); with no values yet — low even bars */
   function waveBars(w, n){
@@ -6684,7 +6792,7 @@
     ['play', 'pause', 'ended', 'timeupdate', 'loadedmetadata'].forEach(function(ev){
       a.addEventListener(ev, function(){
         if(ev === 'loadedmetadata' && PL.seek >= 0){ var d = a.duration; if(isFinite(d) && d > 0) a.currentTime = PL.seek * d; PL.seek = -1; }
-        if(ev === 'ended'){ a.currentTime = 0; }
+        if(ev === 'ended'){ a.currentTime = 0; miniHide(); }
         playerSync(); plLoop();
       });
     });
@@ -6727,8 +6835,13 @@
       s.classList.toggle('on', !!(playing || scr));
       var ratio = scr ? PL.scrub.r : mine ? plRatio(s) : 0;
       paintBars(s.querySelectorAll('.pa-wave i'), ratio);
-      var tm = s.querySelector('.pa-time');
-      if(tm){ var txt = scr ? fmtDur(ratio * plDur(s) * 1000) : fmtDur(+s.dataset.dur || 0); if(tm.textContent !== txt) tm.textContent = txt; }
+      // v58: над общей длиной — время, на котором идёт воспроизведение (и при перемотке пальцем)
+      var cu = s.querySelector('.pa-cur');
+      if(cu){
+        var act = scr || (mine && (playing || PL.a.currentTime > 0.05));
+        var ct = act ? fmtDur((scr ? ratio * plDur(s) : PL.a.currentTime) * 1000) : '';
+        if(cu.textContent !== ct) cu.textContent = ct;
+      }
     });
   }
   /* v49 §4: rewinding with the finger while a record plays: a touch anywhere on the bars goes there, the place follows the
@@ -6758,13 +6871,51 @@
       return;
     }
     a.pause(); PL.key = key; PL.seek = ratio;
+    PL.meta = { e: e, f: f, m: strip.dataset.m || 'audio/mp4', dur: +strip.dataset.dur || 0, size: +strip.dataset.size || 0, w: strip.dataset.w || '' };
     ATT.url(e, f, strip.dataset.m || 'audio/mp4', +strip.dataset.size || 0).then(function(u){
       if(!u || PL.key !== key){ return; }
       a.src = u; a.play().catch(function(){});
     });
     playerSync();
   }
-  function playerStop(){ if(PL.a){ PL.a.pause(); } }
+  function playerStop(){ if(PL.a){ PL.a.pause(); } miniHide(); }
+  /* v58: a voice record that is playing when its window closes («ВЕРНУТЬСЯ») plays on: a small player takes the place of the
+     planner's name at the top, over the cabinet, until the record ends or is closed with ✕ (a pause keeps it there) */
+  var miniEl = null;
+  function playerHandOff(){
+    if(!PL.a || PL.a.paused || PL.a.ended || !PL.key || !PL.meta){ playerStop(); return; }
+    miniShow();
+  }
+  function miniShow(){
+    var host = document.querySelector('.topbar-inner'), M = PL.meta; if(!host || !M) return;
+    if(!miniEl){
+      miniEl = document.createElement('div'); miniEl.className = 'plmini'; miniEl.setAttribute('role', 'region'); miniEl.setAttribute('aria-label', 'Голосовая запись');
+      miniEl.addEventListener('click', function(ev){
+        if(Date.now() - PL.scrubEnd < 400) return;
+        if(ev.target.closest('.plmini-x')){ playerStop(); return; }
+        var strip = miniEl.querySelector('.pa[data-f]'); if(!strip) return;
+        var wv = ev.target.closest('.pa-wave'), rr = -1;
+        if(wv){ var wr = wv.getBoundingClientRect(); rr = wr.width > 0 ? Math.max(0, Math.min(1, (ev.clientX - wr.left) / wr.width)) : -1; }
+        if(wv || ev.target.closest('.pa-play')) playerTap(strip, rr);
+      });
+      miniEl.addEventListener('pointerdown', function(ev){
+        var wv = ev.target.closest('.pa-wave'), strip = wv && wv.closest('.pa[data-f]');
+        if(strip && playerIsPlaying(strip)){ ev.preventDefault(); playerScrub(ev, wv, strip); }
+      });
+    }
+    var w = M.w ? M.w.split(',').map(Number) : [];
+    miniEl.innerHTML = '<div class="pa" data-e="' + esc(M.e) + '" data-f="' + esc(M.f) + '" data-m="' + esc(M.m) + '" data-dur="' + M.dur + '" data-size="' + M.size + '" data-w="' + esc(M.w) + '">' +
+      '<button type="button" class="pa-play" aria-label="Пауза">' + PAUSE_ICO + '</button><div class="pa-wave">' + waveBars(w, 36) + '</div>' +
+      '<span class="pa-time"><b class="pa-cur"></b><span class="pa-tot">' + fmtDur(M.dur) + '</span></span>' +
+      '<button type="button" class="pa-rm plmini-x" aria-label="Закрыть плеер" title="Закрыть">✕</button></div>';
+    if(miniEl.parentNode !== host) host.appendChild(miniEl);
+    host.classList.add('has-mini');
+    hydrateAtt(miniEl); playerSync(); plLoop();
+  }
+  function miniHide(){
+    if(!miniEl || !miniEl.parentNode) return;
+    var host = miniEl.parentNode; host.classList.remove('has-mini'); miniEl.remove();
+  }
 
 
   /* ================= sheet machinery ================= */
@@ -9813,6 +9964,7 @@
     function openWin(p){
       if(busy || openState || orderOpen) return;
       cur = p; busy = true; openState = true; field = null; openRow = null;
+      miniHide();                                  // v58: the record plays on; its strip in the list shows it
       kickerEl.textContent = (settings.ui.titles && settings.ui.titles[1]) || UI_DEF.titles[1];
       titleEl.textContent = p.name || 'Без названия';
       renderList();
@@ -9831,7 +9983,7 @@
       }
       busy = true;
       var done = function(){
-        playerStop(); hideUndo(true); ov.hidden = true; clearFx(); ov.style.paddingTop = ''; ov.style.paddingBottom = ''; ov.style.background = ''; footTop = null;
+        playerHandOff(); hideUndo(true); ov.hidden = true; clearFx(); ov.style.paddingTop = ''; ov.style.paddingBottom = ''; ov.style.background = ''; footTop = null;
         if(sel) setSelecting(false);
         openState = false; busy = false; cur = null; field = null; openRow = null; g = null; listEl.innerHTML = '';
         if(typeof afterSheetClosed === 'function') afterSheetClosed();
@@ -10607,6 +10759,14 @@
       // v47.4: the record folds to one line and stands under the finger; the records below it close up smoothly
       var before = s.rows.map(function(r){ return r.getBoundingClientRect().top; });
       s.row.classList.add('coll');
+      /* v58: «Перенести в список» opens at once over the top of the list — and the list moves down under it by its height
+         (an empty block on top), so the first place in the list is never under the ribbon and a record can be put there */
+      ribOpen(s);
+      if(s.rib){
+        var rp = document.createElement('div'); rp.className = 'pdragsp pribsp';
+        rp.style.cssText = 'flex:none;height:' + (s.rib.offsetHeight + 4) + 'px;margin-bottom:-' + GAP + 'px';
+        listEl.insertBefore(rp, listEl.firstChild);
+      }
       // the whole list moves (by scrolling, or by an empty block on top where it cannot scroll further) so that the folded
       // record stands in its own place in the list and under the finger: the order shown is the true one from the start
       var hC = s.row.offsetHeight, off = s.y - hC / 2 - s.row.getBoundingClientRect().top;
@@ -10628,7 +10788,6 @@
       });
       s.rows.forEach(function(r){ if(r !== s.row) r.classList.add('shift'); });
       s.row.classList.add('lift');
-      ribOpen(s);                                    // v55 §6.2: «Перенести в список» at the top of the window
       dragMove();
       s.raf = requestAnimationFrame(autoScroll);
     }
@@ -11163,7 +11322,7 @@
       // v56 §7.4: вложения удалённых записей — как в списке: картинки, голосовые с воспроизведением и перемоткой
       var dl = sheetEl.querySelector('.dlist');
       hydrateAtt(dl);
-      sheetOnClose = playerStop;
+      sheetOnClose = playerHandOff;
       dl.addEventListener('click', function(ev){
         if(Date.now() - PL.scrubEnd < 400) return;
         var strip = ev.target.closest('.pa[data-f]'); if(!strip) return;
@@ -11371,7 +11530,7 @@
     /* ---------- §3.9: the presentation at the bottom of the window — on the first opening, later by «?» in the header ---------- */
     var INTRO = [
       ['Что такое сфера', 'Задачи делятся по сферам — например, работа и дом. В каждое время на экране задачи нужной сферы.'],
-      ['Расписание', '«Всегда», дни недели или даты (можно целыми месяцами), часы — по желанию. Без часов сфера активна весь день: если не ограничить часы, например у рабочей сферы, она будет доступна круглосуточно. Когда ни одна сфера не работает, на карточке переключателя — «Сфера не настроена».'],
+      ['Расписание', '«Всегда», дни недели или даты (можно целыми месяцами); дни недели и даты складываются. Часы — по желанию. Без часов сфера активна весь день: если не ограничить часы, например у рабочей сферы, она будет доступна круглосуточно. Циферблат под днём недели даёт этому дню свои часы, остальные дни и даты из календаря берут общие. В каждом блоке часов «Исключить» вырезает время — обед из рабочего дня или рабочие часы из всего дня. Когда ни одна сфера не работает, на карточке переключателя — «Сфера не настроена».'],
       ['Выкл, по расписанию, Вкл', 'Переключатель на табличке: по расписанию (значок часов) — сфера работает по расписанию; «Вкл» — активна всегда; «Выкл» — сфера скрыта во всех разделах. Пока своих сфер нет, все задачи — в основной сфере; первая добавленная сфера забирает их себе.'],
       ['Переключатель сфер', 'Карточки внизу экрана, слева от «+». Нажмите на карточку — вперёд выйдет следующая сфера. Выбор временный: он сбрасывается при выходе из приложения или смене раздела. Скрыть переключатель можно в параметрах интерфейса.'],
       ['Совмещение', 'В «Сводке» видны все активные сферы вместе. В «Управлении», «Архиве» и «Отчётах» открывается та, что сейчас «в разгаре», — остальные открываются переключателем.']
@@ -11561,9 +11720,15 @@
     function renderDays(){
       var d = cfg.d, box = $('scDays'), m = d.days.mode;
       var inner = s3HTML(['always', 'week', 'dates'], ['Всегда', 'Дни недели', 'Даты'], m, 'wide', 'Расписание');
-      if(m === 'week') inner += '<div class="swdays">' + WEEKDAY_SHORT_RU.map(function(w, i){
-        return '<button type="button" class="swd' + (d.days.week.indexOf(i) >= 0 ? ' on' : '') + '" data-w="' + i + '">' + w + '</button>';
-      }).join('') + '</div>';
+      if(m === 'week'){
+        inner += '<div class="swdays">' + WEEKDAY_SHORT_RU.map(function(w, i){
+          return '<button type="button" class="swd' + (d.days.week.indexOf(i) >= 0 ? ' on' : '') + '" data-w="' + i + '">' + w + '</button>';
+        }).join('') + '</div><div id="scWx"></div>';
+        var nd = d.days.dates.length + d.days.months.length;
+        if(nd) inner += '<p class="snote" style="margin-top:8px">И ещё ' + (d.days.dates.length ? d.days.dates.length + ' ' + plural3(d.days.dates.length, ['дата', 'даты', 'дат']) : '') +
+          (d.days.dates.length && d.days.months.length ? ' и ' : '') + (d.days.months.length ? d.days.months.length + ' ' + plural3(d.days.months.length, ['месяц', 'месяца', 'месяцев']) : '') +
+          ' из «Дат» — в них общие часы.</p>';
+      }
       else if(m === 'dates'){
         var ti = todayISO();
         if(!cfg.calMonths) inner += '<div id="scCal">' + calMonthsList().map(function(ym){ return buildMonthHtml(ym[0], ym[1], d.days.dates, ti); }).join('') + '</div>';
@@ -11577,6 +11742,8 @@
         }
         inner += '<div class="scalbtns">' + (cfg.calMonths ? '' : '<button type="button" class="addstage" id="scMore">' + (cfg.calMore ? 'Свернуть' : 'Показать больше') + '</button>') +
           '<button type="button" class="addstage" id="scMonths">' + (cfg.calMonths ? 'Указать даты' : 'Указать месяцы') + '</button></div>';
+        if(d.days.week.length) inner += '<p class="snote" style="margin-top:10px">Вместе с днями недели: ' + d.days.week.map(function(i){ return WEEKDAY_SHORT_RU[i]; }).join(', ') +
+          '. Даты добавляются к ним; в датах — общие часы.</p>';
       }
       box.innerHTML = sec('Расписание', inner);
       box.querySelectorAll('.swd').forEach(function(b){
@@ -11584,8 +11751,10 @@
           var i = +b.getAttribute('data-w'), k = d.days.week.indexOf(i);
           if(k >= 0) d.days.week.splice(k, 1); else { d.days.week.push(i); d.days.week.sort(); }
           b.classList.toggle('on', k < 0);
+          renderWx(); renderHours();
         });
       });
+      renderWx();
       box.querySelectorAll('.calcell:not(.pad)').forEach(function(c){
         c.addEventListener('click', function(){
           var iso = c.getAttribute('data-date'), k = d.days.dates.indexOf(iso);
@@ -11609,51 +11778,105 @@
       var d = cfg.d;
       setTimeout(function(){
         if(!cfg) return;
+        var was = d.days.mode;
         d.days.mode = k;
+        // v58: weekdays and dates are summed, so going between them keeps both; «Всегда» marks every weekday
         if(k === 'always') d.days.week = [0, 1, 2, 3, 4, 5, 6];
-        else if(k === 'week') d.days.week = [];
-        renderDays();
+        else if(was === 'always') d.days.week = [];
+        renderDays(); renderHours();
       }, reduce ? 0 : 200);
     });
+    /* v58: under the chosen weekdays — a row of dials: a tap gives that weekday its own hours (a block right under the row),
+       a second tap takes them away (the day goes back to the common hours). A dial under a day not chosen chooses it too. */
+    var WD_FULL = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
+    var CLOCK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.2V12l3.2 2"/></svg>';
+    function ownWd(d, i){ return d.days.week.indexOf(i) >= 0 && d.days.wh && d.days.wh[i]; }
+    function renderWx(){
+      var d = cfg && cfg.d, box = $('scWx'); if(!d || !box) return;
+      d.days.wh = d.days.wh || {};
+      if(!d.days.week.length){ box.innerHTML = ''; return; }
+      var h = '<div class="swclk">' + WEEKDAY_SHORT_RU.map(function(w, i){
+        var on = d.days.week.indexOf(i) >= 0, own = !!d.days.wh[i];
+        return '<button type="button" class="swc' + (own && on ? ' own' : '') + (on ? '' : ' dis') + '" data-wc="' + i + '" aria-pressed="' + (own && on) + '" aria-label="' +
+          WD_FULL[i] + ': ' + (own && on ? 'свои часы' : 'общие часы') + '">' + CLOCK_SVG + '</button>';
+      }).join('') + '</div>';
+      var own = d.days.week.filter(function(i){ return !!d.days.wh[i]; });
+      h += own.map(function(i){
+        return '<div class="swdh" data-wd="' + i + '"><div class="swdh-h"><b>' + WD_FULL[i] + ' — свои часы</b>' +
+          '<button type="button" class="swdh-x" data-wx="' + i + '">Как в общих</button></div><div class="swdh-b"></div></div>';
+      }).join('');
+      if(!own.length) h += '<p class="snote" style="margin-top:8px">Циферблат под днём — свои часы в этот день. Без них — общие часы из «Часов».</p>';
+      box.innerHTML = h;
+      box.querySelectorAll('.swdh').forEach(function(el){ var i = +el.getAttribute('data-wd'); hrsBlock(el.querySelector('.swdh-b'), d.days.wh[i]); });
+      var drop = function(i){ delete d.days.wh[i]; renderWx(); renderHours(); };
+      box.querySelectorAll('[data-wx]').forEach(function(b){ b.addEventListener('click', function(){ drop(+b.getAttribute('data-wx')); }); });
+      box.querySelectorAll('[data-wc]').forEach(function(b){
+        b.addEventListener('click', function(){
+          var i = +b.getAttribute('data-wc'), on = d.days.week.indexOf(i) >= 0;
+          if(on && d.days.wh[i]){ drop(i); return; }
+          if(!on){ d.days.week.push(i); d.days.week.sort(); var sb = $('scDays').querySelector('.swd[data-w="' + i + '"]'); if(sb) sb.classList.add('on'); }
+          if(!d.days.wh[i]) d.days.wh[i] = { hours: d.hours.map(function(x){ return { from: x.from, to: x.to }; }),
+                                             excl: (d.excl || []).map(function(x){ return { from: x.from, to: x.to }; }) };
+          renderWx(); renderHours();
+          var blk = box.querySelector('.swdh[data-wd="' + i + '"]');
+          if(blk){ revealIn(blk); if(!reduce && blk.animate) blk.animate([{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'none' }], { duration: 220, easing: 'ease-out' }); }
+        });
+      });
+    }
     function renderHours(){
       var d = cfg.d, box = $('scHours');
-      var rows = d.hours.map(function(h, i){
-        return '<div class="shrow" data-i="' + i + '"><span>с</span><input type="time" data-k="from" value="' + esc(h.from || '') + '" aria-label="Начало">' +
-          '<span>до</span><input type="time" data-k="to" value="' + esc(h.to || '') + '" aria-label="Конец">' +
-          '<button type="button" class="iconbtn" data-del="1" aria-label="Убрать промежуток">✕</button></div>';
-      }).join('');
-      box.innerHTML = sec('Часы', (d.hours.length ? rows : '<div class="sallday" role="status"><span>Весь день</span></div>') +
-        '<div class="shscale" id="scScale" aria-hidden="true"><div class="shs-track"></div><div class="shs-ticks"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div></div>' +
-        '<button type="button" class="addstage" id="scAddH" style="margin-bottom:0">+ Промежуток</button>', null,
-        'По желанию. Можно через полночь, например 22:00–02:00. Без часов сфера активна весь день своих дней.');
+      d.excl = d.excl || [];
+      var anyOwn = d.days.mode !== 'always' && d.days.week.some(function(i){ return d.days.wh && d.days.wh[i]; });
+      box.innerHTML = sec(anyOwn ? 'Часы — общие' : 'Часы', '<div id="scHb"></div>', null,
+        (anyOwn ? 'Для дней без своих часов и для дат из календаря. ' : '') +
+        'По желанию. Можно через полночь, например 22:00–02:00. Без часов сфера активна весь день своих дней. «Исключить» вырезает время из промежутков: обед 13:00–14:00 из 9:00–18:00 или рабочие часы из всего дня.');
+      hrsBlock($('scHb'), { get hours(){ return d.hours; }, get excl(){ return d.excl; } });
+    }
+    /* v58: a block of hours: the spans (none — «Весь день»), «Кроме» — the spans cut out of them, the scale of the day.
+       spec is live: { hours:[{from,to}], excl:[{from,to}] } */
+    function hrsBlock(box, spec){
+      var row = function(h, i, t){
+        return '<div class="shrow' + (t === 'excl' ? ' sx' : '') + '" data-i="' + i + '" data-t="' + t + '"><span>с</span><input type="time" data-k="from" value="' + esc(h.from || '') + '" aria-label="' + (t === 'excl' ? 'Исключить с' : 'Начало') + '">' +
+          '<span>до</span><input type="time" data-k="to" value="' + esc(h.to || '') + '" aria-label="' + (t === 'excl' ? 'Исключить до' : 'Конец') + '">' +
+          '<button type="button" class="iconbtn" data-del="1" aria-label="' + (t === 'excl' ? 'Убрать исключение' : 'Убрать промежуток') + '">✕</button></div>';
+      };
+      var h = (spec.hours.length ? spec.hours.map(function(x, i){ return row(x, i, 'hours'); }).join('') : '<div class="sallday" role="status"><span>Весь день</span></div>');
+      if(spec.excl.length) h += '<div class="sxt">Кроме</div>' + spec.excl.map(function(x, i){ return row(x, i, 'excl'); }).join('');
+      h += '<div class="shscale" aria-hidden="true"><div class="shs-track"></div><div class="shs-ticks"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div></div>' +
+        '<div class="scalbtns shbtns"><button type="button" class="addstage" data-add="hours">+ Промежуток</button><button type="button" class="addstage" data-add="excl">− Исключить</button></div>';
+      box.innerHTML = h;
+      var sc = box.querySelector('.shscale');
+      sc._paint = function(){
+        var d = cfg && cfg.d; if(!d) return;
+        var col = esc(d.color || 'var(--type-current)'), wrap = function(list){
+          var out = []; list.forEach(function(p){ if(p[1] <= 1440) out.push(p); else { out.push([p[0], 1440]); out.push([0, Math.min(p[1] - 1440, 1440)]); } }); return out; };
+        var base = wrap(hrsRanges(spec.hours, []).r), eff = wrap(hrsRanges(spec.hours, spec.excl).r);
+        var bar = function(p, cls){ return '<i' + (cls ? ' class="' + cls + '"' : '') + ' style="left:' + (p[0] / 14.4) + '%;width:' + ((p[1] - p[0]) / 14.4) + '%;--sc:' + col + '"></i>'; };
+        sc.querySelector('.shs-track').innerHTML = (spec.excl.length ? base.map(function(p){ return bar(p, 'x'); }).join('') : '') + eff.map(function(p){ return bar(p, ''); }).join('');
+      };
       box.querySelectorAll('.shrow').forEach(function(r){
-        var i = +r.getAttribute('data-i');
+        var i = +r.getAttribute('data-i'), t = r.getAttribute('data-t');
         r.querySelectorAll('input').forEach(function(inp){
-          inp.addEventListener('change', function(){ d.hours[i][inp.getAttribute('data-k')] = inp.value; paintScale(); });
-          inp.addEventListener('input', function(){ d.hours[i][inp.getAttribute('data-k')] = inp.value; paintScale(); });
+          var set = function(){ spec[t][i][inp.getAttribute('data-k')] = inp.value; sc._paint(); };
+          inp.addEventListener('change', set); inp.addEventListener('input', set);
         });
-        r.querySelector('[data-del]').addEventListener('click', function(){ d.hours.splice(i, 1); renderHours(); });
+        r.querySelector('[data-del]').addEventListener('click', function(){ spec[t].splice(i, 1); hrsBlock(box, spec); });
       });
-      paintScale();
-      $('scAddH').addEventListener('click', function(){
-        var last = d.hours[d.hours.length - 1];
-        d.hours.push(last ? { from: last.to, to: '' } : { from: '09:00', to: '18:00' });
-        renderHours();
+      box.querySelectorAll('[data-add]').forEach(function(b){
+        b.addEventListener('click', function(){
+          var t = b.getAttribute('data-add'), list = spec[t], last = list[list.length - 1];
+          if(last) list.push({ from: last.to, to: '' });
+          else if(t === 'hours') list.push({ from: '09:00', to: '18:00' });
+          else list.push(spec.hours.length ? { from: '13:00', to: '14:00' } : { from: '09:00', to: '18:00' });
+          hrsBlock(box, spec);
+          var ins = box.querySelectorAll('.shrow[data-t="' + t + '"]'); if(ins.length) revealIn(ins[ins.length - 1]);
+        });
       });
+      sc._paint();
     }
     /* v57 §8.5: шкала суток под «Часами» — выбранные промежутки цветом сферы (через полночь — двумя кусками по краям),
-       без промежутков — вся шкала; меняется сразу при правке времени, только показ */
-    function paintScale(){
-      var d = cfg && cfg.d, el = $('scScale'); if(!d || !el) return;
-      var tr = el.querySelector('.shs-track'), parts = [], ok = /^\d{1,2}:\d{2}$/;
-      if(!d.hours.length) parts.push([0, 1440]);
-      d.hours.forEach(function(h){
-        if(!ok.test(h.from || '') || !ok.test(h.to || '')) return;
-        var a = minOf(h.from), b = minOf(h.to);
-        if(a < b) parts.push([a, b]); else if(a > b){ parts.push([a, 1440]); if(b > 0) parts.push([0, b]); } else parts.push([0, 1440]);
-      });
-      tr.innerHTML = parts.map(function(p){ return '<i style="left:' + (p[0] / 14.4) + '%;width:' + ((p[1] - p[0]) / 14.4) + '%;background:' + esc(d.color || 'var(--type-current)') + '"></i>'; }).join('');
-    }
+       без промежутков — вся шкала; v58: вырезанное «Кроме» — штриховкой; меняется сразу при правке времени, только показ */
+    function paintScale(){ cbody.querySelectorAll('.shscale').forEach(function(el){ if(el._paint) el._paint(); }); }
     function renderPause(){
       var d = cfg.d, box = $('scPause'); if(!box) return;
       box.innerHTML = sec('Пауза до', '<div class="spause"><input type="date" id="scPauseIn" min="' + todayISO() + '" value="' + esc(d.pauseUntil || '') + '" aria-label="Пауза до даты">' +
@@ -11908,13 +12131,21 @@
      resizing (by then the keyboard is gone, so nothing moves). */
   (function(){
     var sceneEl = document.getElementById('kart'), boxEl = document.getElementById('content');
-    var pinH = 0, unpinT = 0, lastResize = 0;
+    var pinH = 0, unpinT = 0, lastResize = 0, appEl = document.getElementById('app');
+    /* v58: the switcher of spheres and the «+» stand at the bottom of the app; while the scene is held (the keyboard is up)
+       they are moved down by as much as the page has shrunk, so they stay where they were (under the keyboard) instead of
+       rising over the screen behind the drawer or a window */
+    function holdBtns(){
+      var k = pinH ? Math.max(0, Math.round(pinH - boxEl.clientHeight)) : 0;
+      if(k) appEl.style.setProperty('--kbk', k + 'px'); else appEl.style.removeProperty('--kbk');
+      appEl.classList.toggle('kbhold', !!k);
+    }
     function editing(){
       var a = document.activeElement;
       return !!(a && a !== document.body && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable) && !sceneEl.contains(a));
     }
     function want(){ return rightDrawerOpen || editing() || !overlay.hidden || !subOverlay.hidden || !!(projects && projects.isOpen()) || !!(sphWin && sphWin.isOpen()); }
-    function setPin(h){ pinH = h; sceneEl.style.bottom = 'auto'; sceneEl.style.height = h + 'px'; }
+    function setPin(h){ pinH = h; sceneEl.style.bottom = 'auto'; sceneEl.style.height = h + 'px'; holdBtns(); }
     function pin(){ clearTimeout(unpinT); if(!pinH){ var h = boxEl.clientHeight; if(h) setPin(h); } }
     var relAt = 0;
     function tryUnpin(again){
@@ -11925,7 +12156,7 @@
         if(want()) return;
         if(performance.now() - lastResize < 250){ tryUnpin(true); return; }   // the keyboard is still going away
         if(boxEl.clientHeight < pinH - 8 && performance.now() - relAt < 3500){ tryUnpin(true); return; }   // it has not started to go yet: the page is still low
-        pinH = 0; sceneEl.style.bottom = ''; sceneEl.style.height = '';
+        pinH = 0; sceneEl.style.bottom = ''; sceneEl.style.height = ''; holdBtns();
       }, 300);
     }
     window.addEventListener('resize', function(){
@@ -11933,6 +12164,7 @@
       if(!pinH) return;
       var h = boxEl.clientHeight;
       if(h > pinH) setPin(h);                       // more room (e.g. the keyboard went away while still typing): take it
+      else holdBtns();
       if(!want()) tryUnpin();
     });
     document.addEventListener('focusin', function(){ if(editing()) pin(); });
@@ -11994,13 +12226,9 @@
     if(s.mode === 'on') return [[0, 1440]];
     if(!hasDays(s)) return [];
     var y = dayAdd(d, -1), today = isSphDay(s, d) && !pausedOn(s, d), prev = isSphDay(s, y) && !pausedOn(s, y), out = [];
-    if(!s.hours.length) return today ? [[0, 1440]] : [];
-    s.hours.forEach(function(h){
-      var a = minOf(h.from), b = minOf(h.to);
-      if(a < b){ if(today) out.push([a, b]); }
-      else { if(today) out.push([a, 1440]); if(prev && b > 0) out.push([0, b]); }
-    });
-    return out.sort(function(p, q){ return p[0] - q[0]; });
+    if(today) sphDayInfo(s, d).r.forEach(function(p){ out.push([p[0], Math.min(p[1], 1440)]); });
+    if(prev) sphDayInfo(s, y).r.forEach(function(p){ if(p[1] > 1440) out.push([0, p[1] - 1440]); });
+    return rngMerge(out);
   }
   // a task the reminders may speak of on day d: in work, of a sphere that is neither off nor on a pause that day
   function ntfSphere(t, d){
@@ -12059,13 +12287,16 @@
     /* v54.1 §6: the category of each finished task (for «Текущих», «Перспективных», «Порядок») and the terms of the periodic
        tasks that have come (each date of a periodic task up to today — «Периодических»: сколько раз наступал срок) */
     var typeOf = {}; tasks.forEach(function(t){ if(t && t.id) typeOf[t.id] = t.type; });
+    /* v58: управляющий и исполнитель задачи (как они записаны в задаче сейчас) — виджеты считают по одному из них */
+    var staffOf = {}; tasks.forEach(function(t){ if(t && t.id) staffOf[t.id] = [String(t.manager || '').trim(), String(t.executor || '').trim()]; });
+    var who = function(o, t){ var w = t && staffOf[t]; if(w){ if(w[0]) o.mgr = w[0]; if(w[1]) o.exe = w[1]; } return o; };
     var ti = todayISO(), from = dayIso(dayAdd(day0Of(Date.now()), -400)), per = [];
     tasks.forEach(function(t){
       if(!t || t.type !== 'periodic') return;
       var sp = taskSphId(t) || '';
       /* v54.2: today's date is not counted (it comes in tomorrow); ok — the day is ticked in «Дни выполнения» */
       var dn = t.datesDone || [];
-      (t.scheduledDates || []).forEach(function(d){ if(d < ti && d >= from) per.push({ d: d, sph: sp, ok: dn.indexOf(d) >= 0 }); });
+      (t.scheduledDates || []).forEach(function(d){ if(d < ti && d >= from) per.push(who({ d: d, sph: sp, ok: dn.indexOf(d) >= 0 }, t.id)); });
     });
     /* v54.2 §2: the terms of current and perspective tasks — a task not finished by its term counts as overdue
        (d — the end of the term, f — when it was finished, 0 — not yet) */
@@ -12075,9 +12306,14 @@
       var e = dueEnd(t); if(!e) return;
       var at = dueAt(t) || (dayAdd(day0Of(e.getTime()), 1).getTime() - 1);
       if(at < lim) return;
-      dues.push({ d: at, f: COMPLETED.indexOf(t.status) >= 0 ? (+t.doneAt || 0) : 0, sph: taskSphId(t) || '', typ: t.type });
+      dues.push(who({ d: at, f: COMPLETED.indexOf(t.status) >= 0 ? (+t.doneAt || 0) : 0, sph: taskSphId(t) || '', typ: t.type }, t.id));
     });
-    return { events: statLog.map(function(e){ var o = { t: e.t, kind: e.kind, sph: e.sph, typ: e.typ || typeOf[e.taskId] || '' }; if(e.to) o.to = e.to; return o; }), archNow: arch, periodic: per, dues: dues };
+    // v58: в архиве сейчас — и по людям: { 'm:Имя': n, 'e:Имя': n } рядом с числами по сферам
+    var archWho = {};
+    tasks.forEach(function(t){ if(t && t.status === 'archived'){ var w = staffOf[t.id] || ['', ''], k = taskSphId(t) || '';
+      if(w[0]) archWho[k + '|m:' + w[0]] = (archWho[k + '|m:' + w[0]] || 0) + 1; if(w[1]) archWho[k + '|e:' + w[1]] = (archWho[k + '|e:' + w[1]] || 0) + 1; } });
+    return { events: statLog.map(function(e){ var o = { t: e.t, kind: e.kind, sph: e.sph, typ: e.typ || typeOf[e.taskId] || '' }; if(e.to) o.to = e.to; who(o, e.taskId); if(!o.mgr && e.mgr) o.mgr = e.mgr; if(!o.exe && e.exe) o.exe = e.exe; return o; }),
+             archNow: arch, archWho: archWho, periodic: per, dues: dues };
   }
   /* the reminders for 14 days ahead (§2). channel: summary | due | periodic | sphere; open: what a tap on it opens.
      Without the main switch the plan is empty (the app then takes back the alarms already set). The last line of the plan
@@ -12119,18 +12355,22 @@
       if(N.sphereStart && hasUserSpheres()) userSpheres().forEach(function(s){
         if(s.mode !== 'auto' || !hasDays(s)) return;
         var nm = cutT(s.name || 'Сфера', 40);
-        if(!s.hours.length){                     // a sphere of whole days: in the morning, on the first of its days in a row
-          if(sphOnDay(s, d) && !sphOnDay(s, dayAdd(d, -1)))
+        if(!isSphDay(s, d) || pausedOn(s, d)) return;
+        var it = sphDayInfo(s, d), y = dayAdd(d, -1), yOn = isSphDay(s, y) && !pausedOn(s, y), yi = yOn ? sphDayInfo(s, y) : null;
+        if(it.allDay){                           // a whole day: in the morning, on the first of such days in a row
+          if(!(yi && yi.allDay))
             push({ id: 'sph:' + s.id + ':' + iso, at: at, channel: 'sphere', title: 'Сегодня сфера «' + nm + '»', text: 'Активна весь день', open: { spheres: true } });
           return;
         }
-        if(!isSphDay(s, d) || pausedOn(s, d)) return;
-        s.hours.forEach(function(h, j){
-          push({ id: 'sph:' + s.id + ':' + iso + ':' + j, at: atOn(d, minOf(h.from)), channel: 'sphere',
-            title: 'Началась сфера «' + nm + '»', text: 'До ' + h.to, open: { spheres: true } });
+        var cont = !!yi && yi.r.some(function(p){ return p[1] >= 1440; });   // it goes on from yesterday: no new «Началась» at 0:00
+        it.r.forEach(function(p, j){
+          if(p[0] === 0 && cont) return;
+          push({ id: 'sph:' + s.id + ':' + iso + ':' + j, at: atOn(d, p[0]), channel: 'sphere',
+            title: 'Началась сфера «' + nm + '»', text: 'До ' + minHm(p[1]), open: { spheres: true } });
         });
       });
     }
+    nagPlan(d0, SNAP_DAYS, tmin, push);              // v58: «Автокопия не настроена»
     // the terms: on the day, or 1 / 3 / 7 days before (a perspective task's term is the last day of its month)
     if(N.before.length) tasks.forEach(function(t){
       if(t.type !== 'current' && t.type !== 'perspective') return;
@@ -12271,6 +12511,7 @@
     if(leftDrawerOpen) closeLeftDrawer();
     if(rightDrawerOpen) closeRightDrawer();
     if(o.spheres){ if(sphWin && !sphWin.isOpen()) sphWin.open(); return; }
+    if(o.backup){ if(sphWin && sphWin.isOpen()) sphWin.close && sphWin.close(); setTimeout(openBackupSettings, 60); return; }
     if(o.newTask){ if(sphWin && sphWin.isOpen()) return; openPresetTask(o.newTask); return; }
     if(sphWin && sphWin.isOpen()) return;
     if(o.task){ var t = tasks.find(function(x){ return x.id === o.task; }); if(t){ openTaskDetail(t.id); return; } }
@@ -12449,7 +12690,7 @@
   var BK_DAY = 86400000, BK_WAIT = 7 * BK_DAY;
   var TIME_HOSTS = 'worldtimeapi.org, timeapi.io';
   function AB(){ return normAutoBackup(settings.autoBackup); }
-  function setAB(k, v){ var o = AB(); o[k] = v; settings.autoBackup = normAutoBackup(o); persistSettings(); }
+  function setAB(k, v){ var o = AB(); o[k] = v; settings.autoBackup = normAutoBackup(o); persistSettings(); bkNagSync(); }
   function netOn(){ if(!PRIV_UI) return true; try{ return !!window.AndroidBridge.netAllowed(); }catch(e){ return false; } }
   function bkHasPw(){ try{ return !!window.AndroidBridge.backupHasPassword(); }catch(e){ return false; } }
 
@@ -12599,7 +12840,87 @@
     go();
   }
   /* плашка под верхней панелью — во всех разделах и сферах; убрать её можно только отменой или новым паролем */
+  /* v58: «Автокопия не настроена» — через неделю после первого запуска и дальше раз в неделю, пока автокопия выключена:
+     плашка под верхней панелью (смахивается в сторону или ✕, нажатие — настройка автокопии) и напоминание в шторке Android
+     (в плане напоминаний, канал «backup»). Первый запуск запоминается на телефоне; отсчёт недель — по дням. */
+  var NAG_KEY = 'planner_bk_nag_v1';
+  function nagState(){
+    var o = null; try{ o = JSON.parse(localStorage.getItem(NAG_KEY) || 'null'); }catch(e){ o = null; }
+    if(!o || !isFinite(o.first)){ o = { first: Date.now(), seen: 0 }; nagSave(o); }
+    return o;
+  }
+  function nagSave(o){ try{ localStorage.setItem(NAG_KEY, JSON.stringify(o)); }catch(e){} }
+  function nagWanted(){ return BK && settingsReady && AB().mode === 'off'; }
+  // the days of the reminder: the first-run day + 7, 14, 21 … days (at 0:00)
+  function nagDay(k){ var f = new Date(nagState().first); return new Date(f.getFullYear(), f.getMonth(), f.getDate() + 7 * k); }
+  function nagLastDue(now){
+    var f = new Date(nagState().first), d0 = new Date(f.getFullYear(), f.getMonth(), f.getDate()).getTime();
+    var k = Math.floor((now - d0) / (7 * BK_DAY) + 1e-6); if(k < 1) return 0;
+    var d = nagDay(k).getTime(); return d <= now ? d : nagDay(k - 1).getTime() * (k > 1 ? 1 : 0);
+  }
+  function openBackupSettings(){
+    var o = nagState(); o.seen = Date.now(); nagSave(o); bkNagSync();
+    if(uiBlocked && uiBlocked()) return;
+    settingsTab = 'main';
+    if(!rightDrawerOpen) openRightDrawer(); else renderSettingsInto(document.getElementById('rightDrawerInner'));
+    var tries = 0, find = function(){
+      var b = document.getElementById('abBlock');
+      if(!b || !b.isConnected){ if(++tries < 60) setTimeout(find, 60); return; }
+      b.scrollIntoView({ block: 'start', behavior: reduceMotion() ? 'auto' : 'smooth' });
+      b.classList.remove('ab-flash'); void b.offsetWidth; b.classList.add('ab-flash');
+    };
+    setTimeout(find, 120);
+  }
+  function reduceMotion(){ return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
+  function bkNagSync(){
+    var tb = document.querySelector('#app > .topbar'); if(!tb) return;
+    var el = document.getElementById('bkNag');
+    var show = nagWanted() && !AB().reset && (function(){ var d = nagLastDue(Date.now()); return d > 0 && nagState().seen < d; })();
+    if(!show){ if(el) el.remove(); return; }
+    if(el) return;
+    el = document.createElement('div'); el.id = 'bkNag'; el.className = 'bk-banner bk-nag'; el.setAttribute('role', 'status');
+    el.innerHTML = '<button type="button" class="bkb-t">Автокопия не настроена<small>резервные копии не делаются · нажмите, чтобы настроить</small></button>' +
+      '<button type="button" class="bkb-x" aria-label="Скрыть до следующей недели">✕</button>';
+    tb.appendChild(el);
+    var gone = function(dir){
+      var o = nagState(); o.seen = Date.now(); nagSave(o);
+      if(reduceMotion()){ el.remove(); return; }
+      el.style.transition = 'transform .22s ease-in, opacity .22s ease-in';
+      el.style.transform = 'translateX(' + (dir || 1) * 110 + '%)'; el.style.opacity = '0';
+      setTimeout(function(){ el.remove(); }, 240);
+    };
+    el.querySelector('.bkb-x').addEventListener('click', function(){ gone(1); });
+    el.querySelector('.bkb-t').addEventListener('click', function(){ if(el.dataset.swiped){ delete el.dataset.swiped; return; } el.remove(); openBackupSettings(); });
+    // смахнуть в сторону
+    var sw = null;
+    el.addEventListener('pointerdown', function(e){ if(e.button > 0) return; sw = { id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, on: false }; });
+    el.addEventListener('pointermove', function(e){
+      if(!sw || e.pointerId !== sw.id) return;
+      var dx = e.clientX - sw.x, dy = e.clientY - sw.y;
+      if(!sw.on){ if(Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy)) return; sw.on = true; try{ el.setPointerCapture(e.pointerId); }catch(_){} el.style.transition = 'none'; }
+      sw.dx = dx; el.style.transform = 'translateX(' + dx + 'px)'; el.style.opacity = String(Math.max(0.2, 1 - Math.abs(dx) / el.offsetWidth));
+    });
+    var up = function(e){
+      if(!sw || e.pointerId !== sw.id) return;
+      var s0 = sw; sw = null; if(!s0.on) return;
+      el.dataset.swiped = '1'; setTimeout(function(){ delete el.dataset.swiped; }, 350);
+      if(Math.abs(s0.dx) > Math.min(90, el.offsetWidth * 0.3)) gone(s0.dx < 0 ? -1 : 1);
+      else { el.style.transition = 'transform .2s ease, opacity .2s ease'; el.style.transform = ''; el.style.opacity = ''; }
+    };
+    el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+  }
+  // in the plan of the reminders: on each reminder day within the plan's days, at the time of the summary
+  function nagPlan(d0, days, tmin, push){
+    if(!nagWanted()) return;
+    for(var k = 1; k < 600; k++){
+      var d = nagDay(k); if(d.getTime() >= d0.getTime() + days * BK_DAY) break;
+      if(d < d0) continue;
+      push({ id: 'bk:' + dayIso(d), at: atOn(d, tmin), channel: 'backup', title: 'Автокопия не настроена',
+        text: 'Резервные копии не делаются. Нажмите, чтобы настроить автокопию.', open: { backup: true } });
+    }
+  }
   function bkBannerSync(){
+    bkNagSync();
     var tb = document.querySelector('#app > .topbar'); if(!tb) return;
     var el = document.getElementById('bkBanner'), R = BK ? AB().reset : null;
     if(!R){ if(el) el.remove(); return; }
